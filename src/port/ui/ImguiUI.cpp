@@ -11,6 +11,7 @@
 #include <libultraship/libultraship.h>
 #include <Fast3D/gfx_pc.h>
 #include "port/Engine.h"
+#include "port/Viewer.h"
 
 
 namespace GameUI {
@@ -396,6 +397,8 @@ void DrawGameMenu() {
 #endif
         ImGui::EndMenu();
     }
+
+    ViewerApp::Instance->DrawUI();
 }
 
 void DrawDebugMenu() {
