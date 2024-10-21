@@ -94,7 +94,7 @@ void ViewerApp::Update() {
 
     gDPSetCombineMode(gDLMaster++, G_CC_MODULATEI, G_CC_MODULATEI_PRIM2);
     gSPLoadUcode(gDLMaster++, UcodeHandlers::ucode_f3dex);
-    gSPDisplayListOTRFilePath(gDLMaster++, test.c_str());
+    // gSPDisplayListOTRFilePath(gDLMaster++, test.c_str());
     gSPLoadUcode(gDLMaster++, UcodeHandlers::ucode_f3dex2);
 
     // Finish and reload

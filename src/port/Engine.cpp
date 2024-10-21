@@ -16,7 +16,13 @@ GameEngine::GameEngine() {
         OTRFiles.push_back(lus_otr);
     }
 
-    this->context = Ship::Context::CreateInstance("UV64", "ship", "uviewer.cfg.json", OTRFiles, {}, 3);
+    this->context = Ship::Context::CreateInstance("UV64", "ship", "uviewer.cfg.json", OTRFiles, {}, 3, { 32000, 1024, 2480 });
+    auto wnd = std::dynamic_pointer_cast<Fast::Fast3dWindow>(Ship::Context::GetInstance()->GetWindow());
+
+    wnd->SetTargetFps(60);
+    wnd->SetMaximumFrameLatency(1);
+    wnd->SetRendererUCode(ucode_f3dex);
+
     auto loader = context->GetResourceManager()->GetResourceLoader();
     loader->RegisterResourceFactory(std::make_shared<LUS::ResourceFactoryBinaryTextureV0>(), RESOURCE_FORMAT_BINARY, "Texture", static_cast<uint32_t>(LUS::ResourceType::Texture), 0);
     loader->RegisterResourceFactory(std::make_shared<LUS::ResourceFactoryBinaryTextureV1>(), RESOURCE_FORMAT_BINARY, "Texture", static_cast<uint32_t>(LUS::ResourceType::Texture), 1);

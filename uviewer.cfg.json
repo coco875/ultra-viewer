@@ -1,0 +1,13 @@
+{
+    "CVars": {
+        "gForceCursorVisibility": 0,
+        "gOpenMenuBar": 1
+    },
+    "Window": {
+        "AudioBackend": "sdl",
+        "Backend": {
+            "Id": 2,
+            "Name": "Metal"
+        }
+    }
+}

@@ -92,14 +92,6 @@ file(GLOB_RECURSE ALL_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 # Exclude specific files from the ALL_FILES list
 list(FILTER ALL_FILES EXCLUDE REGEX ".*.inc.c")
 
-list(FILTER ALL_FILES EXCLUDE REGEX "src/engine/fox_A4290_colheaders.c")
-list(FILTER ALL_FILES EXCLUDE REGEX "src/engine/fox_edata_info.c")
-list(FILTER ALL_FILES EXCLUDE REGEX "src/engine/fox_rcp_setup.c")
-list(FILTER ALL_FILES EXCLUDE REGEX "src/engine/fox_load_inits.c")
-list(FILTER ALL_FILES EXCLUDE REGEX "src/overlays/ovl_ending/fox_end2_data.c")
-list(FILTER ALL_FILES EXCLUDE REGEX "src/sys/sys_timer.c")
-list(FILTER ALL_FILES EXCLUDE REGEX "src/sys/sys_fault.c")
-
 if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
     set(IOS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libultraship/ios)
 
