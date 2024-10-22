@@ -170,8 +170,8 @@ void ViewerApp::Update() {
 
         if(UseLight){
             light = gdSPDefLights1(
-                ambient.r * 255, ambient.g * 255, ambient.b * 255,
-                color.r * 255, color.g * 255, color.b * 255,
+                (u8) (ambient.r * 255), (u8) (ambient.g * 255), (u8) (ambient.b * 255),
+                (u8) (color.r * 255), (u8) (color.g * 255), (u8) (color.b * 255),
                 1,   1,   -1
             );
             gSPSetLights1(gDLMaster++, light);
