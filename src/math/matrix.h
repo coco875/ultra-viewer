@@ -46,7 +46,7 @@ extern Matrix sGfxMatrixStack[];
 extern Matrix* gCalcMatrix;
 extern Matrix sCalcMatrixStack[];
 
-extern Mtx gMainMatrixStack[0x480];
+extern Mtx gMainMatrixStack[];
 extern Mtx* gGfxMtx;
 
 void Matrix_InitPerspective(Gfx** dList);
@@ -69,6 +69,7 @@ void Matrix_GetXYZAngles(Matrix* mtx, Vec3f* rot);
 void Matrix_LookAt(Matrix* mtx, f32 xEye, f32 yEye, f32 zEye, f32 xAt, f32 yAt, f32 zAt, f32 xUp, f32 yUp, f32 zUp,
                    u8 mode);
 void Matrix_SetGfxMtx(Gfx** gfx);
+void Lights_SetOneLight(Gfx** dList, s32 dirX, s32 dirY, s32 dirZ, s32 colR, s32 colG, s32 colB, s32 ambR, s32 ambG, s32 ambB);
 
 #ifdef __cplusplus
 }

@@ -20,9 +20,9 @@ Mtx* gGfxMtx;
 
 void Matrix_InitPerspective(Gfx** dList) {
     u16 norm;
-    u32 near = 100;
-    u32 far = 2000;
-    float fov = 50;
+    float near = 10.0f;
+    float far = 12800.0f;
+    float fov = 45.0f;
 
     guPerspective(gGfxMtx, &norm, fov, 320.0f / 240.0f, near, far, 1.0f);
     gSPPerspNormalize((*dList)++, norm);
