@@ -28,6 +28,8 @@ GameEngine::GameEngine() {
     }
 
     this->context = Ship::Context::CreateInstance("Ultra Viewer 64", "uv64", "uviewer.cfg.json", DataFiles, {}, 3, { 32000, 1024, 2480 });
+    context->GetControlDeck()->SetSinglePlayerMappingMode(true);
+
     auto loader = context->GetResourceManager()->GetResourceLoader();
     loader->RegisterResourceFactory(std::make_shared<LUS::ResourceFactoryBinaryTextureV0>(), RESOURCE_FORMAT_BINARY, "Texture", static_cast<uint32_t>(LUS::ResourceType::Texture), 0);
     loader->RegisterResourceFactory(std::make_shared<LUS::ResourceFactoryBinaryTextureV1>(), RESOURCE_FORMAT_BINARY, "Texture", static_cast<uint32_t>(LUS::ResourceType::Texture), 1);

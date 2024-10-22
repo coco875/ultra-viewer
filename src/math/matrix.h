@@ -9,6 +9,12 @@ typedef struct {
     float z;
 } Vec3f;
 
+typedef struct {
+    float r;
+    float g;
+    float b;
+} Color;
+
 #define M_PI    3.14159265358979323846f
 #define M_RTOD	(180.0f / M_PI)
 #define SQ(val) ((val) * (val))
@@ -17,7 +23,6 @@ typedef struct {
 
 #define IPART(x) ((qs1616(x) >> 16) & 0xFFFF)
 #define FPART(x) (qs1616(x) & 0xFFFF)
-#define FILL_COLOR(rgba) (((rgba) << 0x10) | (rgba))
 
 #define gdSPDefMtx(xx, yx, zx, wx, xy, yy, zy, wy, xz, yz, zz, wz, xw, yw, zw, ww)                                 \
     {                                                                                                              \

@@ -14,6 +14,7 @@ public:
     void Load();
     void Setup();
     void Update();
+    void ReadInput();
     void DrawUI();
     static void RunFrame();
 

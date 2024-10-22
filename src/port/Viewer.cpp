@@ -6,47 +6,52 @@
 #include <libultra/gbi.h>
 #include "math/matrix.h"
 
+ViewerApp* ViewerApp::Instance = new ViewerApp();
+
 Gfx gGfxPool[1024];
 Gfx* gDLMaster = &gGfxPool[0];
 u16 framebuffer[SCREEN_HEIGHT][SCREEN_WIDTH];
 u16 zbuffer[SCREEN_HEIGHT][SCREEN_WIDTH];
+
+bool UseLight = false;
+Vec3f rotation = {};
+Vec3f scale = { 1.0f, 1.0f, 1.0f };
+Vec3f position = { 0.0f, 0.0f, -500.0f };
+Color ambient = { 1.0f, 1.0f, 1.0f };
+Color color   = { 1.0f, 1.0f, 1.0f };
+
+u8 ControllerBits = 0;
+OSContPad ControllerData[MAXCONTROLLERS];
+OSContStatus ControllerStatus[MAXCONTROLLERS];
 
 static Vp vp = {
     SCREEN_WIDTH*2, SCREEN_HEIGHT*2, G_MAXZ/2, 0,	/* scale */
     SCREEN_WIDTH*2, SCREEN_HEIGHT*2, G_MAXZ/2, 0,	/* translate */
 };
 
-Lights1 sun_light = gdSPDefLights1(  80,  80,  80,  /* no ambient light */
-                                   200, 200, 200,  /* white light */
-                                   1,   1,   -1);
 /*
   The initialization of RDP
 */
-Gfx setup_rdpstate[] = {
+static Gfx setup_rdpstate[] = {
+    gsDPPipeSync(),
     gsDPSetRenderMode(G_RM_OPA_SURF, G_RM_OPA_SURF2),
-    gsDPSetCombineMode(G_CC_SHADE, G_CC_SHADE),
-    gsDPSetScissor(G_SC_NON_INTERLACE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
     gsDPSetColorDither(G_CD_BAYER),
+    gsDPSetScissor(G_SC_NON_INTERLACE, 0,0, SCREEN_WIDTH, SCREEN_HEIGHT),
+    gsDPSetCombineMode(G_CC_MODULATERGB, G_CC_PASS2),
     gsSPEndDisplayList(),
 };
 
 /*
   The initialization of RSP
 */
-Gfx setup_rspstate[] = {
+static Gfx setup_rspstate[] = {
     gsSPViewport(&vp),
-    gsSPClearGeometryMode(0xFFFFFFFF),
-    gsSPSetGeometryMode(G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_CULL_BACK),
-    gsSPTexture(0, 0, 0, 0, G_OFF),
-    gsSPSetLights1(sun_light),
+    gsSPClipRatio(FRUSTRATIO_2),
+    gsSPClearGeometryMode(G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_TEXTURE_GEN | G_CULL_BOTH | G_FOG | G_LIGHTING),
+    gsSPSetGeometryMode(G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_CULL_BACK | G_FOG | G_LIGHTING),
+    gsSPTexture(0, 0, 0, 0, G_ON),
     gsSPEndDisplayList(),
 };
-
-float sz = 0.00003f;
-float posZ = -500.0f;
-Vec3f rotation = {};
-
-ViewerApp* ViewerApp::Instance = new ViewerApp();
 
 void ViewerApp::Load() {
     const auto mgr = Ship::Context::GetInstance()->GetResourceManager();
@@ -70,6 +75,10 @@ void ViewerApp::Load() {
     }
 
     std::sort(this->LoadedFiles.begin(), this->LoadedFiles.end());
+
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    osContInit(NULL, &ControllerBits, &ControllerStatus[0]);
 }
 
 void ViewerApp::Setup() {
@@ -92,7 +101,50 @@ void ViewerApp::Setup() {
     gDPFillRectangle(gDLMaster++, 0, 0, SCREEN_WIDTH-1, SCREEN_HEIGHT-1);
 }
 
+void ViewerApp::ReadInput() {
+    osContGetReadData(ControllerData);
+    auto state = ControllerData[0];
+    const float moveSpeed = 10.0f;
+    const float rotateSpeed = 0.08f;
+    
+    position.x += state.stick_x / 4;
+    position.y += state.stick_y / 4;
+
+    if(state.button & L_TRIG) {
+        position.z -= moveSpeed;
+    }
+
+    if(state.button & R_TRIG) {
+        position.z += moveSpeed;
+    }
+
+    if(state.button & U_CBUTTONS) {
+        rotation.x -= rotateSpeed;
+    }
+
+    if(state.button & D_CBUTTONS) {
+        rotation.x += rotateSpeed;
+    }
+
+    if(state.button & L_CBUTTONS) {
+        rotation.y -= rotateSpeed;
+    }
+
+    if(state.button & R_CBUTTONS) {
+        rotation.y += rotateSpeed;
+    }
+
+    if(state.button & A_BUTTON) {
+        rotation.z += rotateSpeed;
+    }
+
+    if(state.button & B_BUTTON) {
+        rotation.z -= rotateSpeed;
+    }
+}
+
 void ViewerApp::Update() {
+    this->ReadInput();
     this->Setup();
 
     gDPSetCombineMode(gDLMaster++, G_CC_MODULATEI, G_CC_MODULATEI_PRIM2);
@@ -100,25 +152,35 @@ void ViewerApp::Update() {
         auto resource = Ship::Context::GetInstance()->GetResourceManager()->LoadResource(this->CurrentFile);
         auto res = std::static_pointer_cast<LUS::DisplayList>(resource);
 
+        Lights1 light = gdSPDefLights1(
+            ambient.r * 255, ambient.g * 255, ambient.b * 255,
+            color.r * 255, color.g * 255, color.b * 255,
+            1,   1,   -1
+        );
+
         Matrix_InitPerspective(&gDLMaster);
 
         Matrix_Push(&gGfxMatrix);
-        Matrix_Translate(gGfxMatrix, 0.0F, 0.0F, posZ, MTXF_APPLY);
+        Matrix_Scale(gGfxMatrix, scale.x, scale.y, scale.z, MTXF_APPLY);
+        Matrix_Translate(gGfxMatrix, position.x, position.y, position.z, MTXF_APPLY);
         Matrix_RotateX(gGfxMatrix, rotation.x, MTXF_APPLY);
         Matrix_RotateY(gGfxMatrix, rotation.y, MTXF_APPLY);
         Matrix_RotateZ(gGfxMatrix, rotation.z, MTXF_APPLY);
         Matrix_SetGfxMtx(&gDLMaster);
 
-        gSPClearGeometryMode(gGfxMatrix++, 0xFFFFFFFF);
-        gSPTexture(gGfxMatrix++, 0xFFFF, 0xFFFF, 0, G_TX_RENDERTILE, G_ON);
-        gDPSetCombineMode(gGfxMatrix++, G_CC_MODULATEI, G_CC_MODULATEI_PRIM2);
-        gSPSetGeometryMode(gGfxMatrix++, G_ZBUFFER);
-        gSPSetOtherMode(gGfxMatrix++, G_SETOTHERMODE_L, G_MDSFT_ALPHACOMPARE, 3, G_AC_NONE | G_ZS_PIXEL);
-        gDPSetRenderMode(gGfxMatrix++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
-        gDPSetPrimColor(gGfxMatrix++, 0, 0, 255, 255, 255, 255);
+        gSPClearGeometryMode(gDLMaster++, 0xFFFFFFFF);
+        gDPSetDepthSource(gDLMaster++, G_ZS_PIXEL);
+        gDPSetRenderMode(gDLMaster++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
+        gSPSetGeometryMode(gDLMaster++, G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_FOG | G_LIGHTING | G_CULL_BACK);
+
+        if(UseLight){
+            gSPSetLights1(gDLMaster++, light);
+        }
 
         gSPLoadUcode(gDLMaster++, res->UCode);
         gSPDisplayListOTRFilePath(gDLMaster++, this->CurrentFile.c_str());
+        gSPLoadUcode(gDLMaster++, UcodeHandlers::ucode_f3dex2);
+        gSPClearGeometryMode(gDLMaster++, 0xFFFFFFFF);
         Matrix_Pop(&gGfxMatrix);
     }
     gSPLoadUcode(gDLMaster++, UcodeHandlers::ucode_f3dex2);
@@ -146,37 +208,56 @@ void ViewerApp::RunFrame() {
     GameEngine::RunCommands(&gGfxPool[0]);
 }
 
+float LastYScroll = 0.0f;
+bool ScrollWasUpdated = false;
+
 void ViewerApp::DrawUI() {
     ImGui::Begin("OTR Loader");
     ImGui::Text("Display Lists");
-    static char filter[128] = "";
-    ImGui::InputText("Filter", filter, IM_ARRAYSIZE(filter));
 
     if (ImGui::BeginCombo("##LFiles", this->CurrentFile.empty() ? "None" : this->CurrentFile.c_str())) {
         ImGuiListClipper clipper;
         clipper.Begin(this->LoadedFiles.size() + 1);
+        if(!ScrollWasUpdated && ImGui::GetScrollY() <= 0.0f && LastYScroll != 0.0f){
+            ImGui::SetScrollY(LastYScroll);
+            ScrollWasUpdated = true;
+        }
         while (clipper.Step()) {
             for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
                 if(i == 0){
                     if (ImGui::Selectable("None", this->CurrentFile.empty())) {
                         this->CurrentFile.clear();
+                        LastYScroll = ImGui::GetScrollY();
                     }
                 } else {
                     auto path = this->LoadedFiles[i - 1];
-                    if (std::strstr(path.c_str(), filter)) {  // Only show items that match the filter
-                        if (ImGui::Selectable(path.c_str(), path == this->CurrentFile)) {
-                            this->CurrentFile = path;
-                        }
+                    if (ImGui::Selectable(path.c_str(), path == this->CurrentFile)) {
+                        this->CurrentFile = path;
+                        LastYScroll = ImGui::GetScrollY();
                     }
                 }
             }
         }
         ImGui::EndCombo();
+    } else {
+        ScrollWasUpdated = false;
     }
-    ImGui::SliderFloat("Z Pos", &posZ, -10000.0f, 10000.0f);
+
+    ImGui::SliderFloat("X Pos", &position.x, -2000.0f, 2000.0f);
+    ImGui::SliderFloat("Y Pos", &position.y, -2000.0f, 2000.0f);
+    ImGui::SliderFloat("Z Pos", &position.z, -2000.0f, 2000.0f);
     ImGui::SliderFloat("X Rot", &rotation.x, -5.0f, 5.0f);
     ImGui::SliderFloat("Y Rot", &rotation.y, -5.0f, 5.0f);
     ImGui::SliderFloat("Z Rot", &rotation.z, -5.0f, 5.0f);
+    ImGui::SliderFloat("X Scale", &scale.x, -5.0f, 5.0f);
+    ImGui::SliderFloat("Y Scale", &scale.y, -5.0f, 5.0f);
+    ImGui::SliderFloat("Z Scale", &scale.z, -5.0f, 5.0f);
+    ImGui::End();
+
+    ImGui::Begin("Light");
+    ImGui::Checkbox("Enable", &UseLight);
+    ImGui::ColorPicker3("Ambient", (float*)&ambient);
+    ImGui::ColorPicker3("liGHT", (float*)&color);
     ImGui::End();
 }
 
