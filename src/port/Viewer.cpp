@@ -71,7 +71,7 @@ void ViewerApp::Load() {
             continue;
         }
         if(metadata->Type == static_cast<uint32_t>(LUS::ResourceType::DisplayList)){
-            this->LoadedFiles.push_back(file.c_str());
+            this->LoadedFiles.push_back({ file });
         }
     }
 
@@ -147,43 +147,45 @@ void ViewerApp::ReadInput() {
 void ViewerApp::Update() {
     this->ReadInput();
     this->Setup();
+    
+    auto resource = Ship::Context::GetInstance()->GetResourceManager()->LoadResource(this->LoadedFiles[0]);
+    auto res = std::static_pointer_cast<LUS::DisplayList>(resource);
+
+    Matrix_InitPerspective(&gDLMaster);
+
+    Matrix_Push(&gGfxMatrix);
+    Matrix_Scale(gGfxMatrix, scale.x, scale.y, scale.z, MTXF_APPLY);
+    Matrix_Translate(gGfxMatrix, position.x, position.y, position.z, MTXF_APPLY);
+    Matrix_RotateX(gGfxMatrix, rotation.x, MTXF_APPLY);
+    Matrix_RotateY(gGfxMatrix, rotation.y, MTXF_APPLY);
+    Matrix_RotateZ(gGfxMatrix, rotation.z, MTXF_APPLY);
+    Matrix_SetGfxMtx(&gDLMaster);
 
     gDPSetCombineMode(gDLMaster++, G_CC_MODULATEI, G_CC_MODULATEI_PRIM2);
-    if(!this->CurrentFile.empty()){
-        auto resource = Ship::Context::GetInstance()->GetResourceManager()->LoadResource(this->CurrentFile);
-        auto res = std::static_pointer_cast<LUS::DisplayList>(resource);
+    gSPClearGeometryMode(gDLMaster++, 0xFFFFFFFF);
+    gDPSetDepthSource(gDLMaster++, G_ZS_PIXEL);
+    gDPSetRenderMode(gDLMaster++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
+    gSPSetGeometryMode(gDLMaster++, G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_FOG | G_LIGHTING | G_CULL_BACK);
 
-        Matrix_InitPerspective(&gDLMaster);
-
-        Matrix_Push(&gGfxMatrix);
-        Matrix_Scale(gGfxMatrix, scale.x, scale.y, scale.z, MTXF_APPLY);
-        Matrix_Translate(gGfxMatrix, position.x, position.y, position.z, MTXF_APPLY);
-        Matrix_RotateX(gGfxMatrix, rotation.x, MTXF_APPLY);
-        Matrix_RotateY(gGfxMatrix, rotation.y, MTXF_APPLY);
-        Matrix_RotateZ(gGfxMatrix, rotation.z, MTXF_APPLY);
-        Matrix_SetGfxMtx(&gDLMaster);
-
-        gSPClearGeometryMode(gDLMaster++, 0xFFFFFFFF);
-        gDPSetDepthSource(gDLMaster++, G_ZS_PIXEL);
-        gDPSetRenderMode(gDLMaster++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
-        gSPSetGeometryMode(gDLMaster++, G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_FOG | G_LIGHTING | G_CULL_BACK);
-
-        if(UseLight){
-            light = gdSPDefLights1(
-                (u8) (ambient.r * 255), (u8) (ambient.g * 255), (u8) (ambient.b * 255),
-                (u8) (color.r * 255), (u8) (color.g * 255), (u8) (color.b * 255),
-                1,   1,   -1
-            );
-            gSPSetLights1(gDLMaster++, light);
-        }
-
-        gSPLoadUcode(gDLMaster++, res->UCode);
-        gSPDisplayListOTRFilePath(gDLMaster++, this->CurrentFile.c_str());
-        gSPLoadUcode(gDLMaster++, UcodeHandlers::ucode_f3dex2);
-        gSPClearGeometryMode(gDLMaster++, 0xFFFFFFFF);
-        Matrix_Pop(&gGfxMatrix);
+    if(UseLight){
+        light = gdSPDefLights1(
+            (u8) (ambient.r * 255), (u8) (ambient.g * 255), (u8) (ambient.b * 255),
+            (u8) (color.r * 255), (u8) (color.g * 255), (u8) (color.b * 255),
+            1,   1,   -1
+        );
+        gSPSetLights1(gDLMaster++, light);
     }
+
+    gSPLoadUcode(gDLMaster++, res->UCode);
+
+    for (auto& dlist : this->OrderDisplay) {
+        gSPDisplayListOTRFilePath(gDLMaster++, dlist.c_str());
+    }
+
     gSPLoadUcode(gDLMaster++, UcodeHandlers::ucode_f3dex2);
+    gSPClearGeometryMode(gDLMaster++, 0xFFFFFFFF);
+    Matrix_Pop(&gGfxMatrix);
+
     gSPSetGeometryMode(gDLMaster++, G_ZBUFFER);
 
     // Finish and reload
@@ -208,57 +210,123 @@ void ViewerApp::RunFrame() {
     GameEngine::RunCommands(&gGfxPool[0]);
 }
 
-float LastYScroll = 0.0f;
-bool ScrollWasUpdated = false;
+static ImGuiTableFlags flags =
+    ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
+    | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_NoBordersInBody
+    | ImGuiTableFlags_ScrollY;
 
 void ViewerApp::DrawUI() {
-    ImGui::Begin("OTR Loader");
-    ImGui::Text("Display Lists");
+    const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 
-    if (ImGui::BeginCombo("##LFiles", this->CurrentFile.empty() ? "None" : this->CurrentFile.c_str())) {
-        ImGuiListClipper clipper;
-        clipper.Begin(this->LoadedFiles.size() + 1);
-        if(!ScrollWasUpdated && ImGui::GetScrollY() <= 0.0f && LastYScroll != 0.0f){
-            ImGui::SetScrollY(LastYScroll);
-            ScrollWasUpdated = true;
-        }
-        while (clipper.Step()) {
-            for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
-                if(i == 0){
-                    if (ImGui::Selectable("None", this->CurrentFile.empty())) {
-                        this->CurrentFile.clear();
-                        LastYScroll = ImGui::GetScrollY();
+    {
+        ImGui::Begin("Display Lists");
+        if (ImGui::BeginTable("files", 2, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 20))){
+            ImGuiListClipper clipper;
+            clipper.Begin(this->LoadedFiles.size());
+
+            ImGui::TableSetupColumn("Draw", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthFixed, 50.0f);
+            ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed, 400.0f);
+            ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
+            ImGui::TableHeadersRow();
+
+            while (clipper.Step()) {
+                for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+                    auto path = this->LoadedFiles[i];
+                    auto cursor = std::find(this->OrderDisplay.begin(), this->OrderDisplay.end(), path);
+                    auto selected = cursor != this->OrderDisplay.end();
+                    ImGui::PushID(i);
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    if(ImGui::Checkbox(("##" + path).c_str(), &selected)){
+                        selected = cursor != this->OrderDisplay.end();
+                        if(selected) {
+                            this->OrderDisplay.erase(cursor);
+                        } else {
+                            this->OrderDisplay.push_back(path);
+                        }
                     }
-                } else {
-                    auto path = this->LoadedFiles[i - 1];
-                    if (ImGui::Selectable(path.c_str(), path == this->CurrentFile)) {
-                        this->CurrentFile = path;
-                        LastYScroll = ImGui::GetScrollY();
-                    }
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%s", path.c_str());
+                    ImGui::PopID();
                 }
             }
+            ImGui::EndTable();
         }
-        ImGui::EndCombo();
-    } else {
-        ScrollWasUpdated = false;
+
+        if (ImGui::BeginTable("order", 3, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 10))){
+            ImGuiListClipper clipper;
+            clipper.Begin(this->OrderDisplay.size());
+
+            ImGui::TableSetupColumn("Order", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthFixed, 50.0f);
+            ImGui::TableSetupColumn("Path",  ImGuiTableColumnFlags_WidthFixed, 300.0f);
+            ImGui::TableSetupColumn("Action", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+            ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
+            ImGui::TableHeadersRow();
+
+            auto size = this->OrderDisplay.size();
+            while (clipper.Step()) {
+                for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+                    auto path = this->OrderDisplay[i];
+                    ImGui::PushID(path.c_str());
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%d", i);
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%s", path.c_str());
+                    ImGui::TableNextColumn();
+                    if(size > 1) {
+                        ImGui::BeginDisabled((i - 1) < 0);
+                        if(ImGui::SmallButton("-")){
+                            auto old = this->OrderDisplay[i - 1];
+                            auto nnew = this->OrderDisplay[i];
+
+                            this->OrderDisplay[i] = old;
+                            this->OrderDisplay[i - 1] = nnew;
+                        }
+                        ImGui::EndDisabled();
+                        ImGui::SameLine();
+                        ImGui::BeginDisabled((i + 1) >= size);
+                        if(ImGui::SmallButton("+")){
+                            auto old = this->OrderDisplay[i + 1];
+                            auto nnew = this->OrderDisplay[i];
+
+                            this->OrderDisplay[i] = old;
+                            this->OrderDisplay[i + 1] = nnew;
+                        }
+                        ImGui::EndDisabled();
+                    }
+                    ImGui::PopID();
+                }
+            }
+            ImGui::EndTable();
+        }
+        ImGui::End();
     }
 
-    ImGui::SliderFloat("X Pos", &position.x, -2000.0f, 2000.0f);
-    ImGui::SliderFloat("Y Pos", &position.y, -2000.0f, 2000.0f);
-    ImGui::SliderFloat("Z Pos", &position.z, -2000.0f, 2000.0f);
-    ImGui::SliderFloat("X Rot", &rotation.x, -5.0f, 5.0f);
-    ImGui::SliderFloat("Y Rot", &rotation.y, -5.0f, 5.0f);
-    ImGui::SliderFloat("Z Rot", &rotation.z, -5.0f, 5.0f);
-    ImGui::SliderFloat("X Scale", &scale.x, -5.0f, 5.0f);
-    ImGui::SliderFloat("Y Scale", &scale.y, -5.0f, 5.0f);
-    ImGui::SliderFloat("Z Scale", &scale.z, -5.0f, 5.0f);
-    ImGui::End();
 
-    ImGui::Begin("Light");
-    ImGui::Checkbox("Enable", &UseLight);
-    ImGui::ColorPicker3("Ambient", (float*)&ambient);
-    ImGui::ColorPicker3("Light", (float*)&color);
-    ImGui::End();
+    {
+        ImGui::Begin("Coords");
+        ImGui::SetWindowSize(ImVec2(400.0f, 400.0f), ImGuiCond_FirstUseEver);
+        ImGui::SliderFloat("X Pos", &position.x, -2000.0f, 2000.0f);
+        ImGui::SliderFloat("Y Pos", &position.y, -2000.0f, 2000.0f);
+        ImGui::SliderFloat("Z Pos", &position.z, -8000.0f, 8000.0f);
+        ImGui::SliderFloat("X Rot", &rotation.x, -5.0f, 5.0f);
+        ImGui::SliderFloat("Y Rot", &rotation.y, -5.0f, 5.0f);
+        ImGui::SliderFloat("Z Rot", &rotation.z, -5.0f, 5.0f);
+        ImGui::SliderFloat("X Scale", &scale.x, -5.0f, 5.0f);
+        ImGui::SliderFloat("Y Scale", &scale.y, -5.0f, 5.0f);
+        ImGui::SliderFloat("Z Scale", &scale.z, -5.0f, 5.0f);
+        ImGui::End();
+    }
+
+    {
+        ImGui::Begin("Light");
+        ImGui::SetWindowSize(ImVec2(450.0f, 900.0f), ImGuiCond_FirstUseEver);
+        ImGui::Checkbox("Enable", &UseLight);
+        ImGui::ColorPicker3("Ambient", (float*) &ambient);
+        ImGui::ColorPicker3("Light", (float*) &color);
+        ImGui::End();
+    }
 }
 
 #ifdef _WIN32

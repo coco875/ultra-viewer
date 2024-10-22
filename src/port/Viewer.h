@@ -19,5 +19,5 @@ public:
     static void RunFrame();
 
     std::vector<std::string> LoadedFiles;
-    std::string CurrentFile;
+    std::vector<std::string> OrderDisplay;
 };
