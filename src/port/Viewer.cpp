@@ -144,12 +144,17 @@ void ViewerApp::ReadInput() {
     }
 }
 
+void LoadDList(std::string& path){
+    auto resource = Ship::Context::GetInstance()->GetResourceManager()->LoadResource(path);
+    auto res = std::static_pointer_cast<LUS::DisplayList>(resource);
+
+    gSPLoadUcode(gDLMaster++, res->UCode);
+    gSPDisplayListOTRFilePath(gDLMaster++, path.c_str());
+}
+
 void ViewerApp::Update() {
     this->ReadInput();
     this->Setup();
-    
-    auto resource = Ship::Context::GetInstance()->GetResourceManager()->LoadResource(this->LoadedFiles[0]);
-    auto res = std::static_pointer_cast<LUS::DisplayList>(resource);
 
     Matrix_InitPerspective(&gDLMaster);
 
@@ -176,10 +181,8 @@ void ViewerApp::Update() {
         gSPSetLights1(gDLMaster++, light);
     }
 
-    gSPLoadUcode(gDLMaster++, res->UCode);
-
-    for (auto& dlist : this->OrderDisplay) {
-        gSPDisplayListOTRFilePath(gDLMaster++, dlist.c_str());
+    for (auto& entry : this->OrderDisplay) {
+        LoadDList(entry);
     }
 
     gSPLoadUcode(gDLMaster++, UcodeHandlers::ucode_f3dex2);
