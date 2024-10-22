@@ -183,111 +183,6 @@ void DrawSettingsMenu(){
         }
 #endif
 
-        { // FPS Slider
-            const int minFps = 30;
-            static int maxFps;
-            if (Ship::Context::GetInstance()->GetWindow()->GetWindowBackend() == Ship::WindowBackend::FAST3D_DXGI_DX11) {
-                maxFps = 360;
-            } else {
-                maxFps = Ship::Context::GetInstance()->GetWindow()->GetCurrentRefreshRate();
-            }
-            int currentFps = 0;
-        #ifdef __WIIU__
-            UIWidgets::Spacer(0);
-            // only support divisors of 60 on the Wii U
-            if (currentFps > 60) {
-                currentFps = 60;
-            } else {
-                currentFps = 60 / (60 / currentFps);
-            }
-
-            int fpsSlider = 1;
-            if (currentFps == 30) {
-                ImGui::Text("FPS: Original (30)");
-            } else {
-                ImGui::Text("FPS: %d", currentFps);
-                if (currentFps == 30) {
-                    fpsSlider = 2;
-                } else { // currentFps == 60
-                    fpsSlider = 3;
-                }
-            }
-            if (CVarGetInteger("gMatchRefreshRate", 0)) {
-                UIWidgets::DisableComponent(ImGui::GetStyle().Alpha * 0.5f);
-            }
-
-            if (ImGui::Button(" - ##WiiUFPS")) {
-                fpsSlider--;
-            }
-            ImGui::SameLine();
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 7.0f);
-
-            UIWidgets::Spacer(0);
-
-            ImGui::PushItemWidth(std::min((ImGui::GetContentRegionAvail().x - 60.0f), 260.0f));
-            ImGui::SliderInt("##WiiUFPSSlider", &fpsSlider, 1, 3, "", ImGuiSliderFlags_AlwaysClamp);
-            ImGui::PopItemWidth();
-
-            ImGui::SameLine();
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 7.0f);
-            if (ImGui::Button(" + ##WiiUFPS")) {
-                fpsSlider++;
-            }
-
-            if (CVarGetInteger("gMatchRefreshRate", 0)) {
-                UIWidgets::ReEnableComponent("");
-            }
-            if (fpsSlider > 3) {
-                fpsSlider = 3;
-            } else if (fpsSlider < 1) {
-                fpsSlider = 1;
-            }
-
-            if (fpsSlider == 1) {
-                currentFps = 20;
-            } else if (fpsSlider == 2) {
-                currentFps = 30;
-            } else if (fpsSlider == 3) {
-                currentFps = 60;
-            }
-            CVarSetInteger("gInterpolationFPS", currentFps);
-            Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
-        #else
-            bool matchingRefreshRate =
-                CVarGetInteger("gMatchRefreshRate", 0) && Ship::Context::GetInstance()->GetWindow()->GetWindowBackend() != Ship::WindowBackend::FAST3D_DXGI_DX11;
-            UIWidgets::CVarSliderInt((currentFps == 20) ? "FPS: Original (20)" : "FPS: %d", "gInterpolationFPS", minFps, maxFps, 1, {
-                .disabled = matchingRefreshRate
-            });
-        #endif
-            if (Ship::Context::GetInstance()->GetWindow()->GetWindowBackend() == Ship::WindowBackend::FAST3D_DXGI_DX11) {
-                UIWidgets::Tooltip(
-                    "Uses Matrix Interpolation to create extra frames, resulting in smoother graphics. This is purely "
-                    "visual and does not impact game logic, execution of glitches etc.\n\n"
-                    "A higher target FPS than your monitor's refresh rate will waste resources, and might give a worse result."
-                );
-            } else {
-                UIWidgets::Tooltip(
-                    "Uses Matrix Interpolation to create extra frames, resulting in smoother graphics. This is purely "
-                    "visual and does not impact game logic, execution of glitches etc."
-                );
-            }
-        } // END FPS Slider
-
-        if (Ship::Context::GetInstance()->GetWindow()->GetWindowBackend() == Ship::WindowBackend::FAST3D_DXGI_DX11) {
-            UIWidgets::Spacer(0);
-            if (ImGui::Button("Match Refresh Rate")) {
-                int hz = Ship::Context::GetInstance()->GetWindow()->GetCurrentRefreshRate();
-                if (hz >= 30 && hz <= 360) {
-                    CVarSetInteger("gInterpolationFPS", hz);
-                    Ship::Context::GetInstance()->GetWindow()->GetGui()->SaveConsoleVariablesNextFrame();
-                }
-            }
-        } else {
-            UIWidgets::PaddedEnhancementCheckbox("Match Refresh Rate", "gMatchRefreshRate", true, false);
-        }
-
-        UIWidgets::Tooltip("Matches interpolation value to the current game's window refresh rate");
-
         if (Ship::Context::GetInstance()->GetWindow()->GetWindowBackend() == Ship::WindowBackend::FAST3D_DXGI_DX11) {
             UIWidgets::PaddedEnhancementSliderInt(CVarGetInteger("gExtraLatencyThreshold", 80) == 0 ? "Jitter fix: Off" : "Jitter fix: >= %d FPS",
                                                   "##ExtraLatencyThreshold", "gExtraLatencyThreshold", 0, 360, "", 80, true, true, false);
@@ -405,18 +300,6 @@ void DrawDebugMenu() {
     if (UIWidgets::BeginMenu("Developer")) {
         UIWidgets::WindowButton("Gfx Debugger", "gGfxDebuggerEnabled", GameUI::mGfxDebuggerWindow, {
             .tooltip = "Enables the Gfx Debugger window, allowing you to input commands, type help for some examples"
-        });
-
-        UIWidgets::CVarCheckbox("Debug mode", "gEnableDebugMode", {
-            .tooltip = "TBD"
-        });
-
-        UIWidgets::CVarCheckbox("Level Selector", "gLevelSelector", {
-            .tooltip = "Allows you to select any level from the main menu"
-        });
-
-        UIWidgets::CVarCheckbox("SFX Jukebox", "gSfxJukebox", {
-            .tooltip = "Allows you to play sound effects from the game"
         });
 
         UIWidgets::Spacer(0);
