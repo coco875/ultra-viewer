@@ -19,6 +19,7 @@ Vec3f scale = { 1.0f, 1.0f, 1.0f };
 Vec3f position = { 0.0f, 0.0f, -500.0f };
 Color ambient = { 1.0f, 1.0f, 1.0f };
 Color color   = { 1.0f, 1.0f, 1.0f };
+Color background = { 0.0f, 0.0f, 0.0f };
 static Lights1 light;
 
 u8 ControllerBits = 0;
@@ -88,6 +89,7 @@ void ViewerApp::Setup() {
     gGfxMtx = &gMainMatrixStack[0];
     gGfxMatrix = &sGfxMatrixStack[0];
     gCalcMatrix = &sCalcMatrixStack[0];
+    auto clear = GPACK_RGBA5551((u8) (background.r * 255), (u8) (background.g * 255), (u8) (background.b * 255), 1);
 
     __gSPSegment(gDLMaster++, 0, 0x0);
     __gSPDisplayList(gDLMaster++, setup_rspstate);
@@ -100,7 +102,7 @@ void ViewerApp::Setup() {
     gDPFillRectangle(gDLMaster++, 0, 0, SCREEN_WIDTH-1, SCREEN_HEIGHT-1);
 
     gDPSetColorImage(gDLMaster++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, framebuffer);
-    gDPSetFillColor(gDLMaster++, (GPACK_RGBA5551(0, 0, 0, 1) << 16 | GPACK_RGBA5551(0, 0, 0, 1)));
+    gDPSetFillColor(gDLMaster++, (clear << 16 | clear));
     gDPFillRectangle(gDLMaster++, 0, 0, SCREEN_WIDTH-1, SCREEN_HEIGHT-1);
 }
 
@@ -341,6 +343,13 @@ void ViewerApp::DrawUI() {
         ImGui::Checkbox("Enable", &UseLight);
         ImGui::ColorPicker3("Ambient", (float*) &ambient);
         ImGui::ColorPicker3("Light", (float*) &color);
+        ImGui::End();
+    }
+
+    {
+        ImGui::Begin("Settings");
+        ImGui::SetWindowSize(ImVec2(450.0f, 900.0f), ImGuiCond_FirstUseEver);
+        ImGui::ColorPicker4("Background Color", (float*) &background);
         ImGui::End();
     }
 }
