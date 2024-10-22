@@ -19,6 +19,7 @@ Vec3f scale = { 1.0f, 1.0f, 1.0f };
 Vec3f position = { 0.0f, 0.0f, -500.0f };
 Color ambient = { 1.0f, 1.0f, 1.0f };
 Color color   = { 1.0f, 1.0f, 1.0f };
+static Lights1 light;
 
 u8 ControllerBits = 0;
 OSContPad ControllerData[MAXCONTROLLERS];
@@ -152,12 +153,6 @@ void ViewerApp::Update() {
         auto resource = Ship::Context::GetInstance()->GetResourceManager()->LoadResource(this->CurrentFile);
         auto res = std::static_pointer_cast<LUS::DisplayList>(resource);
 
-        Lights1 light = gdSPDefLights1(
-            ambient.r * 255, ambient.g * 255, ambient.b * 255,
-            color.r * 255, color.g * 255, color.b * 255,
-            1,   1,   -1
-        );
-
         Matrix_InitPerspective(&gDLMaster);
 
         Matrix_Push(&gGfxMatrix);
@@ -174,6 +169,11 @@ void ViewerApp::Update() {
         gSPSetGeometryMode(gDLMaster++, G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_FOG | G_LIGHTING | G_CULL_BACK);
 
         if(UseLight){
+            light = gdSPDefLights1(
+                ambient.r * 255, ambient.g * 255, ambient.b * 255,
+                color.r * 255, color.g * 255, color.b * 255,
+                1,   1,   -1
+            );
             gSPSetLights1(gDLMaster++, light);
         }
 
