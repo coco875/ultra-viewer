@@ -257,7 +257,7 @@ void ViewerApp::DrawUI() {
     ImGui::Begin("Light");
     ImGui::Checkbox("Enable", &UseLight);
     ImGui::ColorPicker3("Ambient", (float*)&ambient);
-    ImGui::ColorPicker3("liGHT", (float*)&color);
+    ImGui::ColorPicker3("Light", (float*)&color);
     ImGui::End();
 }
 
