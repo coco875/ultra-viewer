@@ -20,4 +20,5 @@ public:
 
     std::vector<std::string> LoadedFiles;
     std::vector<std::string> OrderDisplay;
+    std::unordered_map<std::string, UcodeHandlers> UCodeEntries;
 };

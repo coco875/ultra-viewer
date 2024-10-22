@@ -70,8 +70,10 @@ void ViewerApp::Load() {
         if(metadata == nullptr){
             continue;
         }
-        if(metadata->Type == static_cast<uint32_t>(LUS::ResourceType::DisplayList)){
+        if(metadata->Type == static_cast<uint32_t>(LUS::ResourceType::DisplayList)){            
+            auto res = std::static_pointer_cast<LUS::DisplayList>(resource);
             this->LoadedFiles.push_back({ file });
+            this->UCodeEntries[file] = res->UCode;
         }
     }
 
@@ -144,14 +146,6 @@ void ViewerApp::ReadInput() {
     }
 }
 
-void LoadDList(std::string& path){
-    auto resource = Ship::Context::GetInstance()->GetResourceManager()->LoadResource(path);
-    auto res = std::static_pointer_cast<LUS::DisplayList>(resource);
-
-    gSPLoadUcode(gDLMaster++, res->UCode);
-    gSPDisplayListOTRFilePath(gDLMaster++, path.c_str());
-}
-
 void ViewerApp::Update() {
     this->ReadInput();
     this->Setup();
@@ -182,7 +176,8 @@ void ViewerApp::Update() {
     }
 
     for (auto& entry : this->OrderDisplay) {
-        LoadDList(entry);
+        gSPLoadUcode(gDLMaster++, this->UCodeEntries[entry]);
+        gSPDisplayListOTRFilePath(gDLMaster++, entry.c_str());
     }
 
     gSPLoadUcode(gDLMaster++, UcodeHandlers::ucode_f3dex2);
@@ -223,12 +218,13 @@ void ViewerApp::DrawUI() {
 
     {
         ImGui::Begin("Display Lists");
-        if (ImGui::BeginTable("files", 2, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 20))){
+        if (ImGui::BeginTable("files", 3, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 20))){
             ImGuiListClipper clipper;
             clipper.Begin(this->LoadedFiles.size());
 
             ImGui::TableSetupColumn("Draw", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthFixed, 50.0f);
-            ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed, 400.0f);
+            ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed, 340.0f);
+            ImGui::TableSetupColumn("UCode", ImGuiTableColumnFlags_WidthFixed, 60.0f);
             ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
             ImGui::TableHeadersRow();
 
@@ -250,6 +246,23 @@ void ViewerApp::DrawUI() {
                     }
                     ImGui::TableNextColumn();
                     ImGui::Text("%s", path.c_str());
+                    ImGui::TableNextColumn();
+                    switch (this->UCodeEntries[path]) {
+                        case ucode_f3d:
+                        case ucode_f3db:
+                            ImGui::Text("F3D");
+                            break;
+                        case ucode_f3dex:
+                        case ucode_f3dexb:
+                            ImGui::Text("F3DEX");
+                            break;
+                        case ucode_f3dex2:
+                            ImGui::Text("F3DEX2");
+                            break;
+                        default:
+                            ImGui::Text("Unk");
+                            break;
+                    }
                     ImGui::PopID();
                 }
             }
