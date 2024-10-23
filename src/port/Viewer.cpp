@@ -5,6 +5,7 @@
 #include "DisplayList.h"
 #include <libultra/gbi.h>
 #include "math/matrix.h"
+#include "Fast3D/Fast3dWindow.h"
 
 ViewerApp* ViewerApp::Instance = new ViewerApp();
 
@@ -23,6 +24,7 @@ Color background = { 0.0f, 0.0f, 0.0f };
 static Lights1 light;
 
 u8 ControllerBits = 0;
+ImVec2 prev = ImVec2(0.0f, 0.0f);
 OSContPad ControllerData[MAXCONTROLLERS];
 OSContStatus ControllerStatus[MAXCONTROLLERS];
 
@@ -109,9 +111,12 @@ void ViewerApp::Setup() {
 void ViewerApp::ReadInput() {
     osContGetReadData(ControllerData);
     auto state = ControllerData[0];
+    auto& io = ImGui::GetIO();
     const float moveSpeed = 10.0f;
     const float rotateSpeed = 0.08f;
-    
+    const ImVec2 mouse = io.MousePos;
+    const float wheel = io.MouseWheel;
+
     position.x += state.stick_x / 4;
     position.y += state.stick_y / 4;
 
@@ -146,10 +151,32 @@ void ViewerApp::ReadInput() {
     if(state.button & B_BUTTON) {
         rotation.z -= rotateSpeed;
     }
+
+    if(ImGui::IsAnyItemHovered() || ImGui::IsAnyItemFocused()){
+        return;
+    }
+
+    if(ImGui::IsMouseDragging(ImGuiMouseButton_Left)){
+        float deltaX = mouse.x - prev.x;
+        float deltaY = mouse.y - prev.y;
+
+        if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl)){
+            position.x += deltaX / 2;
+            position.y -= deltaY / 2;
+        } else {
+            rotation.x -= deltaY * 0.008f;
+            rotation.y -= deltaX * 0.008f;
+        }
+    }
+    
+    if(wheel) {
+        position.z -= io.MouseWheel * 10.0;
+    }
+
+    prev = io.MousePosPrev;
 }
 
 void ViewerApp::Update() {
-    this->ReadInput();
     this->Setup();
 
     Matrix_InitPerspective(&gDLMaster);
@@ -215,8 +242,21 @@ static ImGuiTableFlags flags =
     | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_NoBordersInBody
     | ImGuiTableFlags_ScrollY;
 
+bool DrawFloatSlider(const char* text, float* value, float min, float max, float def = 0.0f) {
+    bool slider = ImGui::SliderFloat(text, value, min, max);
+    ImGui::SameLine();
+    ImGui::PushID(text);
+    if(ImGui::Button("Reset")){
+        *value = def;
+        slider = true;
+    }
+    ImGui::PopID();
+    return slider;
+}
+
 void ViewerApp::DrawUI() {
     const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
+    this->ReadInput();
 
     {
         ImGui::Begin("Display Lists");
@@ -325,15 +365,18 @@ void ViewerApp::DrawUI() {
     {
         ImGui::Begin("Coords");
         ImGui::SetWindowSize(ImVec2(400.0f, 400.0f), ImGuiCond_FirstUseEver);
-        ImGui::SliderFloat("X Pos", &position.x, -2000.0f, 2000.0f);
-        ImGui::SliderFloat("Y Pos", &position.y, -2000.0f, 2000.0f);
-        ImGui::SliderFloat("Z Pos", &position.z, -8000.0f, 8000.0f);
-        ImGui::SliderFloat("X Rot", &rotation.x, -5.0f, 5.0f);
-        ImGui::SliderFloat("Y Rot", &rotation.y, -5.0f, 5.0f);
-        ImGui::SliderFloat("Z Rot", &rotation.z, -5.0f, 5.0f);
-        ImGui::SliderFloat("X Scale", &scale.x, -5.0f, 5.0f);
-        ImGui::SliderFloat("Y Scale", &scale.y, -5.0f, 5.0f);
-        ImGui::SliderFloat("Z Scale", &scale.z, -5.0f, 5.0f);
+        DrawFloatSlider("X Pos", &position.x, -2000.0f, 2000.0f);
+        DrawFloatSlider("Y Pos", &position.y, -2000.0f, 2000.0f);
+        DrawFloatSlider("Z Pos", &position.z, -8000.0f, 8000.0f, -500.0f);
+        DrawFloatSlider("X Rot", &rotation.x, -5.0f, 5.0f);
+        DrawFloatSlider("Y Rot", &rotation.y, -5.0f, 5.0f);
+        DrawFloatSlider("Z Rot", &rotation.z, -5.0f, 5.0f);
+        DrawFloatSlider("X Scale", &scale.x, -5.0f, 5.0f, 1.0f);
+        DrawFloatSlider("Y Scale", &scale.y, -5.0f, 5.0f, 1.0f);
+        DrawFloatSlider("Z Scale", &scale.z, -5.0f, 5.0f, 1.0f);
+        if (DrawFloatSlider("Scale", &scale.x, -5.0f, 5.0f, 1.0f)) {
+            scale.y = scale.z = scale.x;
+        }
         ImGui::End();
     }
 
@@ -349,6 +392,10 @@ void ViewerApp::DrawUI() {
     {
         ImGui::Begin("Settings");
         ImGui::SetWindowSize(ImVec2(450.0f, 900.0f), ImGuiCond_FirstUseEver);
+        if (ImGui::Button("Enable SRGB")) {
+            auto wnd = std::dynamic_pointer_cast<Fast::Fast3dWindow>(Ship::Context::GetInstance()->GetWindow());
+            wnd->EnableSRGBMode();
+        }
         ImGui::ColorPicker4("Background Color", (float*) &background);
         ImGui::End();
     }
