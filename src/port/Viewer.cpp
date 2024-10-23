@@ -160,7 +160,7 @@ void ViewerApp::ReadInput() {
         float deltaX = mouse.x - prev.x;
         float deltaY = mouse.y - prev.y;
 
-        if(ImGui::IsKeyDown(ImGuiKey_LeftCtrl)){
+        if(ImGui::IsKeyDown(ImGuiKey_LeftShift)){
             position.x += deltaX / 2;
             position.y -= deltaY / 2;
         } else {
