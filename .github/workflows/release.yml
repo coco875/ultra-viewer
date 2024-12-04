@@ -70,7 +70,7 @@ jobs:
 #    - name: Publish Windows Release
 #      uses: softprops/action-gh-release@v1
 #      with:
-        files: |
+          files: |
 #          build-cmake/*
 #        tag_name: v1.0.0  # Replace with your release tag
 #        release_name: Windows Release v1.0.0  # Replace with your release name
