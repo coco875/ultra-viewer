@@ -22,9 +22,9 @@ jobs:
       - name: Create Package
         run: |
           mkdir ultra-viewer-release
-          mv build-cmake/ultra-viewer ultra-viewer-release/
+          mv build-cmake/UltraViewer ultra-viewer-release/
       - name: Publish packaged artifacts
         uses: actions/upload-artifact@v4
         with:
             name: ultra-viewer-mac-x64
-            path: ultra-viewerccc-release
+            path: ultra-viewer-release
