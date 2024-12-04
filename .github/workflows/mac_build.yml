@@ -1,0 +1,28 @@
+name: Macos Compile
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: brew install sdl2 libpng glew ninja cmake
+      - name: Build
+        run: |
+          cmake -H. -Bbuild-cmake -GNinja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-cmake -j
+      - name: Create Package
+        run: |
+          mkdir ultra-viewer-release
+          mv build-cmake/ultra-viewer ultra-viewer-release/
+      - name: Publish packaged artifacts
+        uses: actions/upload-artifact@v4
+        with:
+            name: ultra-viewer-mac-x64
+            path: ultra-viewerccc-release
