@@ -22,19 +22,10 @@ include(FindFontconfig)
 
 if (WIN32)
 include(cmake/automate-vcpkg.cmake)
-# Forced to use MSVC
-set(MSVC ON)
-
-if(MSVC)
 set(VCPKG_TRIPLET x64-windows-static)
 set(VCPKG_TARGET_TRIPLET x64-windows-static)
-else()
-set(VCPKG_TRIPLET x64-mingw-static)
-set(VCPKG_TARGET_TRIPLET x64-mingw-static)
-endif()
-
 vcpkg_bootstrap()
-vcpkg_install_packages(fontconfig sdl2 zlib bzip2 libzip libpng getopt dirent libusb pthread glew glfw3 nlohmann-json tinyxml2 spdlog)
+vcpkg_install_packages(zlib bzip2 libzip libpng sdl2 glew glfw3 nlohmann-json tinyxml2 spdlog)
 endif()
 
 if (MSVC)
@@ -324,7 +315,8 @@ if(MSVC)
           ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
           ${DEFAULT_CXX_EXCEPTION_HANDLING}
       )
-      target_compile_options(${PROJECT_NAME} PRIVATE  $<$<CONFIG:Debug>:/ZI;>)
+      target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI;>)
+      target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:/Zi;>)
   elseif("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
       target_compile_options(${PROJECT_NAME} PRIVATE
           $<$<CONFIG:Debug>:
