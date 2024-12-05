@@ -61,6 +61,12 @@ add_compile_definitions(
 	AVOID_UB=1
 )
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    if (CMAKE_C_COMPILER_LAUNCHER MATCHES "ccache|sccache")
+        set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT Embedded)
+    endif()
+endif()
+
 # Find necessary libraries
 if (UNIX AND NOT APPLE)
 find_package(OpenGL REQUIRED)
@@ -315,8 +321,8 @@ if(MSVC)
           ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
           ${DEFAULT_CXX_EXCEPTION_HANDLING}
       )
-      target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI;>)
-      target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:/Zi;>)
+      target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Debug>:/ZI;/FS;>)
+      target_compile_options(${PROJECT_NAME} PRIVATE $<$<CONFIG:Release>:/Zi;/FS;>)
   elseif("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
       target_compile_options(${PROJECT_NAME} PRIVATE
           $<$<CONFIG:Debug>:
