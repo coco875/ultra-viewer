@@ -25,8 +25,8 @@ jobs:
       - name: Build
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          cmake -H. -Bbuild-cmake -GNinja -DCMAKE_BUILD_TYPE=Release
-          cmake --build build-cmake -j
+          cmake --no-warn-unused-cli -H. -Bbuild-cmake -GNinja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-cmake --config Release
       - name: Create Package
         run: |
           mkdir ultra-viewer-release
