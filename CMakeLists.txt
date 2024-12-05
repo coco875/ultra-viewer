@@ -302,13 +302,15 @@ if(MSVC)
           $<$<CONFIG:Debug>:
               /w;
               /Od;
-              /MTd
+              /MTd;
+              /FS
           >
           $<$<CONFIG:Release>:
               /Oi;
               /Gy;
               /W3;
-              /MT
+              /MT;
+              /FS
           >
           /permissive-;
           /MP;
