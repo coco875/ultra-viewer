@@ -491,3 +491,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
       )
   endif()
 endif()
+
+FetchContent_Declare(
+    Wamr
+    GIT_REPOSITORY https://github.com/bytecodealliance/wasm-micro-runtime.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(Wamr)
