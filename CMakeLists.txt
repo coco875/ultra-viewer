@@ -284,6 +284,25 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_DEPENDENCIES}")
 
+string(TOLOWER ${CMAKE_SYSTEM_NAME} WAMR_BUILD_PLATFORM)
+
+set (WAMR_BUILD_INTERP 1)
+set (WAMR_BUILD_FAST_INTERP 1)
+set (WAMR_BUILD_AOT 1)
+set (WAMR_BUILD_LIBC_BUILTIN 1)
+set (WAMR_BUILD_LIBC_WASI 1)
+set (WAMR_BUILD_SIMD 1)
+
+FetchContent_Declare(
+    Wamr
+    GIT_REPOSITORY https://github.com/bytecodealliance/wasm-micro-runtime.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(Wamr)
+include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
+add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
+target_link_libraries(${PROJECT_NAME} PRIVATE vmlib)
+
 if(CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch")
 
 nx_generate_nacp(${PROJECT_NAME}.nacp
@@ -491,10 +510,3 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
       )
   endif()
 endif()
-
-FetchContent_Declare(
-    Wamr
-    GIT_REPOSITORY https://github.com/bytecodealliance/wasm-micro-runtime.git
-    GIT_TAG main
-)
-FetchContent_MakeAvailable(Wamr)
