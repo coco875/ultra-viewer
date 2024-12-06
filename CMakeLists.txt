@@ -61,6 +61,12 @@ add_compile_definitions(
 	AVOID_UB=1
 )
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    if (CMAKE_C_COMPILER_LAUNCHER MATCHES "ccache|sccache")
+        set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT Embedded)
+    endif()
+endif()
+
 # Find necessary libraries
 if (UNIX AND NOT APPLE)
 find_package(OpenGL REQUIRED)
