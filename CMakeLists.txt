@@ -301,7 +301,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Wamr)
 include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
 add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
-target_link_libraries(${PROJECT_NAME} PRIVATE vmlib)
+target_link_libraries(${PROJECT_NAME} PUBLIC vmlib)
 
 if(CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch")
 
