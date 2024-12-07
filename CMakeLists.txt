@@ -340,11 +340,9 @@ if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
     include_directories(${zydis_SOURCE_DIR}/include)
     include_directories(${zydis_SOURCE_DIR}/src)
     add_definitions(-DZYDIS_STATIC_BUILD=1)
+    set(CMAKE_CXX_STANDARD 20 CACHE STRING "The C++ standard to use")
+    set(CMAKE_C_STANDARD 11 CACHE STRING "The C standard to use")
 endif ()
-
-if (MSVC)
-    add_compile_options(/experimental:c11atomics)
-endif()
 
 ################################################################################
 # Compile and link options
