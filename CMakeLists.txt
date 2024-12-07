@@ -282,6 +282,27 @@ if(USE_NETWORKING)
     target_compile_definitions(${PROJECT_NAME} PRIVATE USE_NETWORKING)
 endif()
 
+target_link_libraries(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_DEPENDENCIES}")
+
+if(CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch")
+
+nx_generate_nacp(${PROJECT_NAME}.nacp
+   NAME "${PROJECT_NAME}"
+   AUTHOR "${PROJECT_TEAM}"
+   VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
+)
+
+nx_create_nro(${PROJECT_NAME}
+    NACP ${PROJECT_NAME}.nacp
+)
+
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.nro DESTINATION . COMPONENT ${PROJECT_NAME})
+endif()
+
+#==============================================================================#
+# WAMR Integration                                                             #
+#==============================================================================#
+
 string(TOLOWER ${CMAKE_SYSTEM_NAME} WAMR_BUILD_PLATFORM)
 
 set (WAMR_BUILD_INTERP 1)
@@ -300,23 +321,6 @@ FetchContent_MakeAvailable(Wamr)
 include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
 add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
 target_link_libraries(${PROJECT_NAME} PUBLIC vmlib)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_DEPENDENCIES}")
-
-if(CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch")
-
-nx_generate_nacp(${PROJECT_NAME}.nacp
-   NAME "${PROJECT_NAME}"
-   AUTHOR "${PROJECT_TEAM}"
-   VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
-)
-
-nx_create_nro(${PROJECT_NAME}
-    NACP ${PROJECT_NAME}.nacp
-)
-
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.nro DESTINATION . COMPONENT ${PROJECT_NAME})
-endif()
 
 ################################################################################
 # Compile and link options
