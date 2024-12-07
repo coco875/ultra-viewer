@@ -20,3 +20,19 @@ index 26aab966..b27e472f 100644
  wasm_runtime_is_underlying_binary_freeable(WASMModuleCommon *const module)
  {
  #if WASM_ENABLE_INTERP != 0
+diff --git a/core/shared/platform/include/platform_wasi_types.h b/core/shared/platform/include/platform_wasi_types.h
+index ac1a95ea..6c8862ed 100644
+--- a/core/shared/platform/include/platform_wasi_types.h
++++ b/core/shared/platform/include/platform_wasi_types.h
+@@ -25,7 +25,11 @@
+ #endif /* _Static_assert */
+ 
+ #ifndef _Alignof
++#ifdef _MSC_VER
++#define _Alignof __alignof
++#else
+ #define _Alignof alignof
++#endif
+ #endif /* _Alignof */
+ 
+ extern "C" {
