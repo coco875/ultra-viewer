@@ -282,8 +282,6 @@ if(USE_NETWORKING)
     target_compile_definitions(${PROJECT_NAME} PRIVATE USE_NETWORKING)
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_DEPENDENCIES}")
-
 string(TOLOWER ${CMAKE_SYSTEM_NAME} WAMR_BUILD_PLATFORM)
 
 set (WAMR_BUILD_INTERP 1)
@@ -303,48 +301,7 @@ include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
 add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
 target_link_libraries(${PROJECT_NAME} PUBLIC vmlib)
 
-if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
-    AND (WAMR_BUILD_PLATFORM STREQUAL "windows")
-    AND (NOT WAMR_DISABLE_HW_BOUND_CHECK EQUAL 1))
-  include(FetchContent)
-
-  FetchContent_Declare(
-    zycore
-    GIT_REPOSITORY https://github.com/zyantific/zycore-c.git
-  )
-  FetchContent_GetProperties(zycore)
-  if (NOT zycore_POPULATED)
-    message ("-- Fetching zycore ..")
-    FetchContent_Populate(zycore)
-    include_directories("${zycore_SOURCE_DIR}/include")
-    include_directories("${zycore_BINARY_DIR}")
-    add_definitions(-DZYCORE_STATIC_BUILD=1)
-    add_subdirectory(${zycore_SOURCE_DIR} ${zycore_BINARY_DIR} EXCLUDE_FROM_ALL)
-    file (GLOB_RECURSE c_source_zycore ${zycore_SOURCE_DIR}/src/*.c)
-  endif ()
-
-  FetchContent_Declare(
-    zydis
-    GIT_REPOSITORY https://github.com/zyantific/zydis.git
-    GIT_TAG e14a07895136182a5b53e181eec3b1c6e0b434de
-  )
-  FetchContent_GetProperties(zydis)
-  if (NOT zydis_POPULATED)
-    message ("-- Fetching zydis ..")
-    FetchContent_Populate(zydis)
-    option(ZYDIS_FEATURE_ENCODER "" OFF)
-    option(ZYDIS_BUILD_TOOLS "" OFF)
-    option(ZYDIS_BUILD_EXAMPLES "" OFF)
-    option(ZYDIS_BUILD_MAN "" OFF)
-    option(ZYDIS_BUILD_DOXYGEN "" OFF)
-    include_directories("${zydis_BINARY_DIR}")
-    include_directories("${zydis_SOURCE_DIR}/include")
-    include_directories("${zydis_SOURCE_DIR}/src")
-    add_definitions(-DZYDIS_STATIC_BUILD=1)
-    add_subdirectory(${zydis_SOURCE_DIR} ${zydis_BINARY_DIR} EXCLUDE_FROM_ALL)
-    file (GLOB_RECURSE c_source_zydis ${zydis_SOURCE_DIR}/src/*.c)
-  endif ()
-endif ()
+target_link_libraries(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_DEPENDENCIES}")
 
 if(CMAKE_SYSTEM_NAME MATCHES "NintendoSwitch")
 
