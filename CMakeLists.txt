@@ -303,6 +303,25 @@ endif()
 # WAMR Integration                                                             #
 #==============================================================================#
 
+string(TOLOWER ${CMAKE_SYSTEM_NAME} WAMR_BUILD_PLATFORM)
+
+set (WAMR_BUILD_INTERP 1)
+set (WAMR_BUILD_FAST_INTERP 1)
+set (WAMR_BUILD_AOT 1)
+set (WAMR_BUILD_LIBC_BUILTIN 1)
+set (WAMR_BUILD_LIBC_WASI 1)
+set (WAMR_BUILD_SIMD 1)
+
+FetchContent_Declare(
+    Wamr
+    GIT_REPOSITORY https://github.com/bytecodealliance/wasm-micro-runtime.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(Wamr)
+include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
+add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
+target_link_libraries(${PROJECT_NAME} PUBLIC vmlib)
+
 if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
     AND (WAMR_BUILD_PLATFORM STREQUAL "windows")
     AND (NOT WAMR_DISABLE_HW_BOUND_CHECK EQUAL 1))
@@ -337,33 +356,14 @@ if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
     option(ZYDIS_BUILD_EXAMPLES "" OFF)
     option(ZYDIS_BUILD_MAN "" OFF)
     option(ZYDIS_BUILD_DOXYGEN "" OFF)
-    include_directories("${zydis_BINARY_DIR}")
-    include_directories("${zydis_SOURCE_DIR}/include")
-    include_directories("${zydis_SOURCE_DIR}/src")
+    include_directories(${zydis_BINARY_DIR})
+    include_directories(${zydis_SOURCE_DIR}/include)
+    include_directories(${zydis_SOURCE_DIR}/src)
     add_definitions(-DZYDIS_STATIC_BUILD=1)
     add_subdirectory(${zydis_SOURCE_DIR} ${zydis_BINARY_DIR} EXCLUDE_FROM_ALL)
     file (GLOB_RECURSE c_source_zydis ${zydis_SOURCE_DIR}/src/*.c)
   endif ()
 endif ()
-
-string(TOLOWER ${CMAKE_SYSTEM_NAME} WAMR_BUILD_PLATFORM)
-
-set (WAMR_BUILD_INTERP 1)
-set (WAMR_BUILD_FAST_INTERP 1)
-set (WAMR_BUILD_AOT 1)
-set (WAMR_BUILD_LIBC_BUILTIN 1)
-set (WAMR_BUILD_LIBC_WASI 1)
-set (WAMR_BUILD_SIMD 1)
-
-FetchContent_Declare(
-    Wamr
-    GIT_REPOSITORY https://github.com/bytecodealliance/wasm-micro-runtime.git
-    GIT_TAG main
-)
-FetchContent_MakeAvailable(Wamr)
-include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
-add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
-target_link_libraries(${PROJECT_NAME} PUBLIC vmlib)
 
 ################################################################################
 # Compile and link options
