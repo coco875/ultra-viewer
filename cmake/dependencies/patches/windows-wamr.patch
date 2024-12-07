@@ -28,7 +28,7 @@ index ac1a95ea..6c8862ed 100644
  #endif /* _Static_assert */
  
  #ifndef _Alignof
-+#ifdef _WINDOWS
++#ifdef __CLR_VER
 +#define _Alignof __alignof
 +#else
  #define _Alignof alignof
