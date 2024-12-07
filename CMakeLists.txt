@@ -312,10 +312,16 @@ set (WAMR_BUILD_LIBC_BUILTIN 1)
 set (WAMR_BUILD_LIBC_WASI 1)
 set (WAMR_BUILD_SIMD 1)
 
+set(windows_wamr_patch_file ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/patches/windows-wamr.patch)
+
+# Applies the patch or checks if it has already been applied successfully previously. Will error otherwise.
+set(wamr_apply_patch_if_needed git apply ${windows_wamr_patch_file} ${git_hide_output} || git apply --reverse --check ${windows_wamr_patch_file})
+
 FetchContent_Declare(
     Wamr
     GIT_REPOSITORY https://github.com/bytecodealliance/wasm-micro-runtime.git
     GIT_TAG main
+    PATCH_COMMAND ${wamr_apply_patch_if_needed}
 )
 FetchContent_MakeAvailable(Wamr)
 include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
