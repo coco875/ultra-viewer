@@ -342,6 +342,10 @@ if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
     add_definitions(-DZYDIS_STATIC_BUILD=1)
 endif ()
 
+if (MSVC)
+    add_compile_options(/experimental:c11atomics)
+endif()
+
 ################################################################################
 # Compile and link options
 ################################################################################
