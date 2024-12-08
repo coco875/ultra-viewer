@@ -348,18 +348,18 @@ endif()
 if(MSVC)
 target_compile_options(${PROJECT_NAME} PUBLIC
 $<$<CONFIG:Debug>:
-/MDd
+/MTd
 >
 $<$<CONFIG:Release>:
-/MD
+/MT
 >
 )
 target_link_options(${PROJECT_NAME} PUBLIC
 $<$<CONFIG:Debug>:
-/MDd
+/MTd
 >
 $<$<CONFIG:Release>:
-/MD
+/MT
 >
 )
 endif()
@@ -373,13 +373,13 @@ if(MSVC)
           $<$<CONFIG:Debug>:
               /w;
               /Od;
-              /MDd
+              /MTd
           >
           $<$<CONFIG:Release>:
               /Oi;
               /Gy;
               /W3;
-              /MD
+              /MT
           >
           /permissive-;
           /MP;
@@ -391,13 +391,13 @@ if(MSVC)
   elseif("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
       target_compile_options(${PROJECT_NAME} PRIVATE
           $<$<CONFIG:Debug>:
-              /MDd
+              /MTd
           >
           $<$<CONFIG:Release>:
               /O2;
               /Oi;
               /Gy;
-              /MD
+              /MT
           >
           /permissive-;
           /MP;
