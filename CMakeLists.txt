@@ -154,7 +154,7 @@ if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
 #     include_directories(${zydis_SOURCE_DIR}/include)
 #     include_directories(${zydis_SOURCE_DIR}/src)
 #     add_definitions(-DZYDIS_STATIC_BUILD=1)
-#     add_definitions(-DCOMPILING_WASM_RUNTIME_API=1)
+    add_definitions(-DCOMPILING_WASM_RUNTIME_API=1)
 endif ()
 
 ################################################################################
