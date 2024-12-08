@@ -354,14 +354,6 @@ $<$<CONFIG:Release>:
 /MT
 >
 )
-target_link_options(${PROJECT_NAME} PUBLIC
-$<$<CONFIG:Debug>:
-/MTd
->
-$<$<CONFIG:Release>:
-/MT
->
-)
 endif()
 
 ################################################################################
