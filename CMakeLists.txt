@@ -354,7 +354,7 @@ if(MSVC)
           $<$<CONFIG:Debug>:
               /w;
               /Od;
-              /MTd
+              /MDd
           >
           $<$<CONFIG:Release>:
               /Oi;
@@ -372,7 +372,7 @@ if(MSVC)
   elseif("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "Win32")
       target_compile_options(${PROJECT_NAME} PRIVATE
           $<$<CONFIG:Debug>:
-              /MTd
+              /MDd
           >
           $<$<CONFIG:Release>:
               /O2;
