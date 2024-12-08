@@ -354,6 +354,14 @@ $<$<CONFIG:Release>:
 /MD
 >
 )
+target_link_options(${PROJECT_NAME} PUBLIC
+$<$<CONFIG:Debug>:
+/MDd
+>
+$<$<CONFIG:Release>:
+/MD
+>
+)
 endif()
 
 ################################################################################
