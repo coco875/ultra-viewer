@@ -345,6 +345,17 @@ nx_create_nro(${PROJECT_NAME}
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.nro DESTINATION . COMPONENT ${PROJECT_NAME})
 endif()
 
+if(MSVC)
+target_compile_options(${PROJECT_NAME} PUBLIC
+$<$<CONFIG:Debug>:
+/MDd
+>
+$<$<CONFIG:Release>:
+/MD
+>
+)
+endif()
+
 ################################################################################
 # Compile and link options
 ################################################################################
