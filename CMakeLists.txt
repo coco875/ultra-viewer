@@ -321,6 +321,7 @@ FetchContent_Declare(
     Wamr
     GIT_REPOSITORY https://github.com/bytecodealliance/wasm-micro-runtime.git
     GIT_TAG main
+    PATCH_COMMAND ${wamr_apply_patch_if_needed}
 )
 FetchContent_MakeAvailable(Wamr)
 include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
