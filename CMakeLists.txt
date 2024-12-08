@@ -142,9 +142,9 @@ include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
 add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
 target_link_libraries(${PROJECT_NAME} PUBLIC vmlib)
 
-# if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
-#     AND (WAMR_BUILD_PLATFORM STREQUAL "windows")
-#     AND (NOT WAMR_DISABLE_HW_BOUND_CHECK EQUAL 1))
+if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
+    AND (WAMR_BUILD_PLATFORM STREQUAL "windows")
+    AND (NOT WAMR_DISABLE_HW_BOUND_CHECK EQUAL 1))
 #     include_directories("${zycore_SOURCE_DIR}/include")
 #     include_directories("${zycore_BINARY_DIR}")
 #     add_definitions(-DZYCORE_STATIC_BUILD=1)
@@ -154,8 +154,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC vmlib)
 #     include_directories(${zydis_SOURCE_DIR}/include)
 #     include_directories(${zydis_SOURCE_DIR}/src)
 #     add_definitions(-DZYDIS_STATIC_BUILD=1)
-#     add_definitions(-DCOMPILING_WASM_RUNTIME_API=1)
-# endif ()
+    add_definitions(-DCOMPILING_WASM_RUNTIME_API=1)
+endif ()
 
 ################################################################################
 # MSVC runtime library
