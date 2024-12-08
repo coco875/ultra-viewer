@@ -346,9 +346,8 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.nro DESTINATION . COMP
 endif()
 
 if(MSVC)
-target_compile_options(${PROJECT_NAME} PUBLIC
-/NODEFAULTLIB:library
-)
+target_link_options(${PROJECT_NAME} PRIVATE /NODEFAULTLIB:MSVCRT)
+target_compile_definitions(${PROJECT_NAME} PRIVATE _UCRT_LINKER)
 endif()
 
 ################################################################################
