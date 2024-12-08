@@ -345,11 +345,6 @@ nx_create_nro(${PROJECT_NAME}
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.nro DESTINATION . COMPONENT ${PROJECT_NAME})
 endif()
 
-if(MSVC)
-target_link_options(${PROJECT_NAME} PRIVATE /NODEFAULTLIB:libucrt)
-target_compile_definitions(${PROJECT_NAME} PRIVATE _MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
-
 ################################################################################
 # Compile and link options
 ################################################################################
