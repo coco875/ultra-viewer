@@ -137,7 +137,7 @@ FetchContent_Declare(
     GIT_TAG main
     PATCH_COMMAND ${wamr_apply_patch_if_needed}
 )
-FetchContent_MakeAvailable(Wamr)
+FetchContent_Populate(Wamr)
 include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
 add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
 target_link_libraries(${PROJECT_NAME} PUBLIC vmlib)
