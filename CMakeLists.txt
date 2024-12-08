@@ -360,7 +360,7 @@ if(MSVC)
               /Oi;
               /Gy;
               /W3;
-              /MT
+              /MD
           >
           /permissive-;
           /MP;
@@ -378,7 +378,7 @@ if(MSVC)
               /O2;
               /Oi;
               /Gy;
-              /MT
+              /MD
           >
           /permissive-;
           /MP;
