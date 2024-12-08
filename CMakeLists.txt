@@ -346,8 +346,8 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.nro DESTINATION . COMP
 endif()
 
 if(MSVC)
-target_link_options(your_target PRIVATE /NODEFAULTLIB:libucrt)
-target_compile_definitions(your_target PRIVATE _MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>")
+target_link_options(${PROJECT_NAME} PRIVATE /NODEFAULTLIB:libucrt)
+target_compile_definitions(${PROJECT_NAME} PRIVATE _MSVC_RUNTIME_LIBRARY="MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
 ################################################################################
