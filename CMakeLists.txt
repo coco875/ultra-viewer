@@ -111,6 +111,52 @@ else()
     add_executable(${PROJECT_NAME} ${ALL_FILES})
 endif()
 
+#==============================================================================#
+# WAMR Integration                                                             #
+#==============================================================================#
+
+include(FetchContent)
+
+string(TOLOWER ${CMAKE_SYSTEM_NAME} WAMR_BUILD_PLATFORM)
+
+set (WAMR_BUILD_INTERP 1)
+set (WAMR_BUILD_FAST_INTERP 1)
+set (WAMR_BUILD_AOT 1)
+set (WAMR_BUILD_LIBC_BUILTIN 1)
+set (WAMR_BUILD_LIBC_WASI 1)
+set (WAMR_BUILD_SIMD 1)
+
+set(windows_wamr_patch_file ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/patches/windows-wamr.patch)
+
+# Applies the patch or checks if it has already been applied successfully previously. Will error otherwise.
+set(wamr_apply_patch_if_needed git apply ${windows_wamr_patch_file} ${git_hide_output} || git apply --reverse --check ${windows_wamr_patch_file})
+
+FetchContent_Declare(
+    Wamr
+    GIT_REPOSITORY https://github.com/bytecodealliance/wasm-micro-runtime.git
+    GIT_TAG main
+#     PATCH_COMMAND ${wamr_apply_patch_if_needed}
+)
+FetchContent_MakeAvailable(Wamr)
+include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
+add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
+target_link_libraries(${PROJECT_NAME} PUBLIC vmlib)
+
+# if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
+#     AND (WAMR_BUILD_PLATFORM STREQUAL "windows")
+#     AND (NOT WAMR_DISABLE_HW_BOUND_CHECK EQUAL 1))
+#     include_directories("${zycore_SOURCE_DIR}/include")
+#     include_directories("${zycore_BINARY_DIR}")
+#     add_definitions(-DZYCORE_STATIC_BUILD=1)
+
+  
+#     include_directories(${zydis_BINARY_DIR})
+#     include_directories(${zydis_SOURCE_DIR}/include)
+#     include_directories(${zydis_SOURCE_DIR}/src)
+#     add_definitions(-DZYDIS_STATIC_BUILD=1)
+#     add_definitions(-DCOMPILING_WASM_RUNTIME_API=1)
+# endif ()
+
 ################################################################################
 # MSVC runtime library
 ################################################################################
@@ -298,50 +344,6 @@ nx_create_nro(${PROJECT_NAME}
 
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.nro DESTINATION . COMPONENT ${PROJECT_NAME})
 endif()
-
-#==============================================================================#
-# WAMR Integration                                                             #
-#==============================================================================#
-
-string(TOLOWER ${CMAKE_SYSTEM_NAME} WAMR_BUILD_PLATFORM)
-
-set (WAMR_BUILD_INTERP 1)
-set (WAMR_BUILD_FAST_INTERP 1)
-set (WAMR_BUILD_AOT 1)
-set (WAMR_BUILD_LIBC_BUILTIN 1)
-set (WAMR_BUILD_LIBC_WASI 1)
-set (WAMR_BUILD_SIMD 1)
-
-set(windows_wamr_patch_file ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/patches/windows-wamr.patch)
-
-# Applies the patch or checks if it has already been applied successfully previously. Will error otherwise.
-set(wamr_apply_patch_if_needed git apply ${windows_wamr_patch_file} ${git_hide_output} || git apply --reverse --check ${windows_wamr_patch_file})
-
-FetchContent_Declare(
-    Wamr
-    GIT_REPOSITORY https://github.com/bytecodealliance/wasm-micro-runtime.git
-    GIT_TAG main
-    PATCH_COMMAND ${wamr_apply_patch_if_needed}
-)
-FetchContent_MakeAvailable(Wamr)
-include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
-add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
-target_link_libraries(${PROJECT_NAME} PUBLIC vmlib)
-
-if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
-    AND (WAMR_BUILD_PLATFORM STREQUAL "windows")
-    AND (NOT WAMR_DISABLE_HW_BOUND_CHECK EQUAL 1))
-    include_directories("${zycore_SOURCE_DIR}/include")
-    include_directories("${zycore_BINARY_DIR}")
-    add_definitions(-DZYCORE_STATIC_BUILD=1)
-
-  
-    include_directories(${zydis_BINARY_DIR})
-    include_directories(${zydis_SOURCE_DIR}/include)
-    include_directories(${zydis_SOURCE_DIR}/src)
-    add_definitions(-DZYDIS_STATIC_BUILD=1)
-    add_definitions(-DCOMPILING_WASM_RUNTIME_API=1)
-endif ()
 
 ################################################################################
 # Compile and link options
