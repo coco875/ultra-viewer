@@ -115,6 +115,10 @@ endif()
 # WAMR Integration                                                             #
 #==============================================================================#
 
+# Reset default linker flags
+set (CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+set (CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
 include(FetchContent)
 
 string(TOLOWER ${CMAKE_SYSTEM_NAME} WAMR_BUILD_PLATFORM)
@@ -154,7 +158,7 @@ if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
 #     include_directories(${zydis_SOURCE_DIR}/include)
 #     include_directories(${zydis_SOURCE_DIR}/src)
 #     add_definitions(-DZYDIS_STATIC_BUILD=1)
-    add_definitions(-DWASM_RUNTIME_API_EXTERN)
+#     add_definitions(-DCOMPILING_WASM_RUNTIME_API=1)
 endif ()
 
 ################################################################################
