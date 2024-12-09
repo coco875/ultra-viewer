@@ -138,6 +138,25 @@
 //     }
 // }
 
+char* read_wasm_binary_to_buffer(char* path, uint32_t* size) {
+    std::ifstream file;
+    file.open(path, std::ios::binary);
+    if (!file.is_open()) {
+        perror(path);
+        return NULL;
+    }
+
+    file.seekg(0, std::ios::end);
+
+    *size = file.tellg();
+
+    file.seekg(0);
+
+    char* c_buffer = (char*) malloc(*size);
+    file.read(c_buffer, *size);
+    return c_buffer;
+}
+
 using namespace wasmtime;
 
 std::string readFile(const char *name) {
@@ -161,8 +180,10 @@ void load_mods() {
     // default like this is here.
     std::cout << "Compiling module\n";
     Engine engine;
+    uint32_t len;
+    uint8_t * buffer = (uint8_t*) read_wasm_binary_to_buffer("rust.wasm", &len);
     auto module =
-        Module::compile(engine, readBin("rust.wasm")).unwrap();
+        Module::compile(engine, Span(buffer, len)).unwrap();
     //     Module::compile(engine, readFile("hello.wat")).unwrap();
 
     // After a module is compiled we create a `Store` which will contain
@@ -171,6 +192,7 @@ void load_mods() {
     // here.
     std::cout << "Initializing...\n";
     Store store(engine);
+    store.context().set_wasi({});
 
     // Our wasm module we'll be instantiating requires one imported function.
     // the function takes no parameters and returns no results. We create a host
