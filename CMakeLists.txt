@@ -112,57 +112,29 @@ else()
 endif()
 
 #==============================================================================#
-# WAMR Integration                                                             #
+# Wasmtime Integration                                                             #
 #==============================================================================#
-
-# Reset default linker flags
-set (CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
-set (CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
 include(FetchContent)
 
-string(TOLOWER ${CMAKE_SYSTEM_NAME} WAMR_BUILD_PLATFORM)
-
-set (WAMR_BUILD_INTERP 1)
-set (WAMR_BUILD_FAST_INTERP 1)
-set (WAMR_BUILD_AOT 1)
-set (WAMR_BUILD_LIBC_BUILTIN 1)
-if (NOT MSVC)
-  set (WAMR_BUILD_LIBC_WASI 1)
-endif ()
-set (WAMR_BUILD_SIMD 1)
-set (WAMR_BUILD_APP_FRAMEWORK 1)
-
-set(windows_wamr_patch_file ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/patches/windows-wamr.patch)
-
-# Applies the patch or checks if it has already been applied successfully previously. Will error otherwise.
-set(wamr_apply_patch_if_needed git apply ${windows_wamr_patch_file} ${git_hide_output} || git apply --reverse --check ${windows_wamr_patch_file})
+FetchContent_Declare(
+    wasmtime
+    GIT_REPOSITORY https://github.com/bytecodealliance/wasmtime.git
+    GIT_TAG main
+)
+FetchContent_Populate(wasmtime)
+add_subdirectory(${wasmtime_SOURCE_DIR}/crates/c-api
+${CMAKE_CURRENT_BINARY_DIR}/wasmtime)
+target_include_directories(${PROJECT_NAME} PUBLIC wasmtime)
+target_link_libraries(${PROJECT_NAME} PUBLIC wasmtime)
 
 FetchContent_Declare(
-    Wamr
-    GIT_REPOSITORY https://github.com/bytecodealliance/wasm-micro-runtime.git
+    wasmtimecpp
+    GIT_REPOSITORY https://github.com/bytecodealliance/wasmtime-cpp.git
     GIT_TAG main
-#     PATCH_COMMAND ${wamr_apply_patch_if_needed}
 )
-FetchContent_Populate(Wamr)
-include(${wamr_SOURCE_DIR}/build-scripts/runtime_lib.cmake)
-add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
-target_link_libraries(${PROJECT_NAME} PRIVATE vmlib)
-
-if ((WAMR_BUILD_TARGET STREQUAL "X86_64" OR WAMR_BUILD_TARGET STREQUAL "AMD_64")
-    AND (WAMR_BUILD_PLATFORM STREQUAL "windows")
-    AND (NOT WAMR_DISABLE_HW_BOUND_CHECK EQUAL 1))
-#     include_directories("${zycore_SOURCE_DIR}/include")
-#     include_directories("${zycore_BINARY_DIR}")
-#     add_definitions(-DZYCORE_STATIC_BUILD=1)
-
-  
-#     include_directories(${zydis_BINARY_DIR})
-#     include_directories(${zydis_SOURCE_DIR}/include)
-#     include_directories(${zydis_SOURCE_DIR}/src)
-#     add_definitions(-DZYDIS_STATIC_BUILD=1)
-#     add_definitions(-DCOMPILING_WASM_RUNTIME_API=1)
-endif ()
+FetchContent_Populate(wasmtimecpp)
+include_directories(${wasmtimecpp_SOURCE_DIR}/include)
 
 ################################################################################
 # MSVC runtime library
