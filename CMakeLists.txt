@@ -127,8 +127,11 @@ set (WAMR_BUILD_INTERP 1)
 set (WAMR_BUILD_FAST_INTERP 1)
 set (WAMR_BUILD_AOT 1)
 set (WAMR_BUILD_LIBC_BUILTIN 1)
-set (WAMR_BUILD_LIBC_WASI 1)
+if (NOT MSVC)
+  set (WAMR_BUILD_LIBC_WASI 1)
+endif ()
 set (WAMR_BUILD_SIMD 1)
+set (WAMR_BUILD_APP_FRAMEWORK 1)
 
 set(windows_wamr_patch_file ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/patches/windows-wamr.patch)
 
