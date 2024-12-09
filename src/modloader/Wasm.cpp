@@ -4,6 +4,7 @@
 #include <vector>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 #include <wasmtime.hh>
 // #include <wasm_export.h>
 // #include <wasm_exec_env.h>
