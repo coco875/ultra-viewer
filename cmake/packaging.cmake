@@ -76,9 +76,9 @@ execute_process(
     ${LINUXDEPLOY_EXECUTABLE}
     --appimage-extract-and-run
     --appdir=${CPACK_TEMPORARY_DIRECTORY}
-    --executable=$<TARGET_FILE:2ship>
-    $<$<BOOL:$<TARGET_PROPERTY:2ship,APPIMAGE_DESKTOP_FILE>>:--desktop-file=$<TARGET_PROPERTY:2ship,APPIMAGE_DESKTOP_FILE>>
-    $<$<BOOL:$<TARGET_PROPERTY:2ship,APPIMAGE_ICON_FILE>>:--icon-file=$<TARGET_PROPERTY:2ship,APPIMAGE_ICON_FILE>>
+    --executable=$<TARGET_FILE:UltraViewer>
+    $<$<BOOL:$<TARGET_PROPERTY:UltraViewer,APPIMAGE_DESKTOP_FILE>>:--desktop-file=$<TARGET_PROPERTY:UltraViewer,APPIMAGE_DESKTOP_FILE>>
+    $<$<BOOL:$<TARGET_PROPERTY:UltraViewer,APPIMAGE_ICON_FILE>>:--icon-file=$<TARGET_PROPERTY:UltraViewer,APPIMAGE_ICON_FILE>>
     --output=appimage
     # --verbosity=2
 )
