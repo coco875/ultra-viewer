@@ -19,7 +19,7 @@ jobs:
           cmake --build ./build/x64
       - name: Create Package
         run: |
-          (cd build-windows && cpack)
+          (cd build/x64 && cpack)
           cd ..
           mv _packages/*.zip _packages/ultra-viewer-windows.zip
           Expand-Archive -Path _packages/ultra-viewer-windows.zip -DestinationPath ultra-viewer-windows
