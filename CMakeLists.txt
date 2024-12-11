@@ -504,6 +504,7 @@ add_custom_target(CreateOSXIcons
     COMMENT "Creating OSX icons ..."
     )
     add_dependencies(${PROJECT_NAME} CreateOSXIcons)
+    configure_file("${CMAKE_SOURCE_DIR}/Info.plist" "${CMAKE_BINARY_DIR}/Info.plist" COPYONLY)
 endif()
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY APPIMAGE_DESKTOP_FILE_TERMINAL YES)
