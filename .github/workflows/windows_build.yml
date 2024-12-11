@@ -20,7 +20,7 @@ jobs:
       - name: Create Package
         run: |
           (cd build/x64 && cpack)
-          cd ..
+          cd ../..
           mv _packages/*.zip _packages/ultra-viewer-windows.zip
           Expand-Archive -Path _packages/ultra-viewer-windows.zip -DestinationPath ultra-viewer-windows
       - name: Upload build
