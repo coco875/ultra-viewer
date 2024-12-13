@@ -61,12 +61,6 @@ add_compile_definitions(
 	AVOID_UB=1
 )
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    if (CMAKE_C_COMPILER_LAUNCHER MATCHES "ccache|sccache")
-        set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT Embedded)
-    endif()
-endif()
-
 # Find necessary libraries
 if (UNIX AND NOT APPLE)
 find_package(OpenGL REQUIRED)
@@ -110,31 +104,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
 else()
     add_executable(${PROJECT_NAME} ${ALL_FILES})
 endif()
-
-#==============================================================================#
-# Wasmtime Integration                                                             #
-#==============================================================================#
-
-include(FetchContent)
-
-FetchContent_Declare(
-    wasmtime
-    GIT_REPOSITORY https://github.com/bytecodealliance/wasmtime.git
-    GIT_TAG main
-)
-FetchContent_Populate(wasmtime)
-add_subdirectory(${wasmtime_SOURCE_DIR}/crates/c-api
-${CMAKE_CURRENT_BINARY_DIR}/wasmtime)
-target_include_directories(${PROJECT_NAME} PUBLIC wasmtime)
-target_link_libraries(${PROJECT_NAME} PUBLIC wasmtime)
-
-FetchContent_Declare(
-    wasmtimecpp
-    GIT_REPOSITORY https://github.com/bytecodealliance/wasmtime-cpp.git
-    GIT_TAG main
-)
-FetchContent_Populate(wasmtimecpp)
-include_directories(${wasmtimecpp_SOURCE_DIR}/include)
 
 ################################################################################
 # MSVC runtime library

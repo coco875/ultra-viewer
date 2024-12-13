@@ -6,7 +6,6 @@
 #include <libultra/gbi.h>
 #include "math/matrix.h"
 #include "Fast3D/Fast3dWindow.h"
-#include <modloader/Wasm.h>
 
 ViewerApp* ViewerApp::Instance = new ViewerApp();
 
@@ -410,7 +409,6 @@ extern "C"
 #endif
 int main(int argc, char *argv[]) {
 #endif
-    load_mods();
     GameEngine::Create();
     ViewerApp::Instance->Load();
     ViewerApp::Instance->Setup();
