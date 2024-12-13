@@ -140,7 +140,7 @@
 
 using namespace wasmtime;
 
-Span<uint8_t> read_wasm_binary_to_buffer(char* path) {
+Span<uint8_t> read_wasm_binary_to_buffer(const char* path) {
     std::ifstream file;
     file.open(path, std::ios::binary);
     if (!file.is_open()) {
