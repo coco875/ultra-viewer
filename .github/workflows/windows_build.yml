@@ -25,4 +25,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ultra-viewer-windows
-          path: ./build/x64/Debug
+          path: ./build/x64/Release
