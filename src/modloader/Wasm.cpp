@@ -156,7 +156,7 @@ Span<uint8_t> read_wasm_binary_to_buffer(char* path) {
 
     uint8_t* c_buffer = (uint8_t*) malloc(size);
     file.read((char*) c_buffer, size);
-    return Span(c_buffer, size);
+    return Span<uint8_t>(c_buffer, size);
 }
 
 std::string readFile(const char *name) {
