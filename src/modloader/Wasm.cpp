@@ -167,12 +167,6 @@ std::string readFile(const char *name) {
     return strStream.str();
 }
 
-Span<uint8_t> readBin(const char *name){
-    std::ifstream instream(name, std::ios::in | std::ios::binary);
-    std::vector<uint8_t> data((std::istreambuf_iterator<char>(instream)), std::istreambuf_iterator<char>());
-    return Span(data);
-}
-
 void load_mods() {
     // First the wasm module needs to be compiled. This is done with a global
     // "compilation environment" within an `Engine`. Note that engines can be
@@ -192,7 +186,20 @@ void load_mods() {
     // here.
     std::cout << "Initializing...\n";
     Store store(engine);
-    store.context().set_wasi({});
+    
+    // Configure WASI and store it within our `wasmtime_store_t`
+    WasiConfig wasi;
+    wasi.inherit_argv();
+    wasi.inherit_env();
+    wasi.inherit_stdin();
+    wasi.inherit_stdout();
+    wasi.inherit_stderr();
+    store.context().set_wasi(std::move(wasi)).unwrap();
+
+    // Create our linker which will be linking our modules together, and then add
+    // our WASI instance to it.
+    Linker linker(engine);
+    linker.define_wasi().unwrap();
 
     // Our wasm module we'll be instantiating requires one imported function.
     // the function takes no parameters and returns no results. We create a host
@@ -205,7 +212,7 @@ void load_mods() {
     // phase, pairing together a compiled module as well as a set of imports.
     // Note that this is where the wasm `start` function, if any, would run.
     std::cout << "Instantiating module...\n";
-    auto instance = Instance::create(store, module, {host_func}).unwrap();
+    auto instance = linker.instantiate(store, module).unwrap();
 
     // Next we poke around a bit to extract the `run` function from the module.
     std::cout << "Extracting export...\n";
