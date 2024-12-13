@@ -15,10 +15,18 @@ jobs:
           submodules: recursive
       - name: Install dependencies
         run: brew install sdl2 libpng glew ninja cmake libzip nlohmann-json tinyxml2 spdlog
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2.14
+        with:
+          key: ${{ runner.os }}-mac-ccache-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-mac-ccache-${{ github.ref }}
+            ${{ runner.os }}-mac-ccache-
       - name: Build
         run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           cmake -H. -Bbuild-cmake -GNinja -DCMAKE_BUILD_TYPE=Release
-          cmake --build build-cmake -j
+          cmake --build build-cmake
       - name: Create Package
         run: |
           (cd build-cmake && cpack)
