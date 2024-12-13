@@ -29,10 +29,12 @@ jobs:
           cmake --build build-cmake
       - name: Create Package
         run: |
-          mkdir ultra-viewer-release
-          mv build-cmake/UltraViewer ultra-viewer-release/
+          (cd build-cmake && cpack)
+          mv _packages/*.dmg ultra-viewer.dmg
+          # mv README.md readme.txt
       - name: Publish packaged artifacts
         uses: actions/upload-artifact@v4
         with:
             name: ultra-viewer-mac-x64
-            path: ultra-viewer-release
+            path: |
+              ultra-viewer.dmg

@@ -49,10 +49,12 @@ jobs:
           cmake --build build-cmake -j
       - name: Create Package
         run: |
-          mkdir ultra-viewer-release
-          mv build-cmake/UltraViewer ultra-viewer-release/
+          (cd build-cmake && cpack -G External)
+          # mv README.md readme.txt
+          mv build-cmake/*.appimage ultra-viewer.appimage
       - name: Publish packaged artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ultra-viewer-linux-x64
-          path: ultra-viewer-release
+          path: |
+            ultra-viewer.appimage
