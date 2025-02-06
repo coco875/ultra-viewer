@@ -73,8 +73,8 @@ void ViewerApp::Load() {
         if(metadata == nullptr){
             continue;
         }
-        if(metadata->Type == static_cast<uint32_t>(LUS::ResourceType::DisplayList)){            
-            auto res = std::static_pointer_cast<LUS::DisplayList>(resource);
+        if(metadata->Type == static_cast<uint32_t>(Fast::ResourceType::DisplayList)){            
+            auto res = std::static_pointer_cast<Fast::DisplayList>(resource);
             this->LoadedFiles.push_back({ file });
             this->UCodeEntries[file] = res->UCode;
         }
