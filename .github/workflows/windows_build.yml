@@ -45,6 +45,10 @@ jobs:
           set $env:PATH="$env:USERPROFILE/.cargo/bin;$env:PATH"
           cmake --no-warn-unused-cli -S . -B "build/x64" -G Ninja -DCMAKE_MAKE_PROGRAM=ninja -DCMAKE_BUILD_TYPE:STRING=Release -DUSE_AUTO_VCPKG=ON -DCMAKE_VS_PLATFORM_NAME=x64 -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
           cmake --build ./build/x64 --parallel 1
+      - name: Create Package
+        run: |
+          (cd build/x64 && cpack)
+          cd ../..
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
