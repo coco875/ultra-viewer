@@ -196,6 +196,7 @@ void DrawSettingsMenu(){
             { Ship::WindowBackend::FAST3D_DXGI_DX11, "DirectX" },
             { Ship::WindowBackend::FAST3D_SDL_OPENGL, "OpenGL"},
             { Ship::WindowBackend::FAST3D_SDL_METAL, "Metal" },
+            { Ship::WindowBackend::FAST3D_SDL_LLGL, "LLGL" },
         };
 
         ImGui::Text("Renderer API (Needs reload)");
