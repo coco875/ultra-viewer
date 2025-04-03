@@ -2,9 +2,9 @@ name: Macos Compile
 
 on:
   push:
-    branches: [ "*" ]
+    branches: ["*"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   build:
@@ -14,7 +14,7 @@ jobs:
         with:
           submodules: recursive
       - name: Install dependencies
-        run: brew install sdl2 libpng glew ninja cmake libzip nlohmann-json tinyxml2 spdlog
+        run: brew install sdl2 libpng glew ninja cmake libzip nlohmann-json tinyxml2 spdlog vulkan-tools spirv-cross
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.14
         with:
@@ -35,6 +35,6 @@ jobs:
       - name: Publish packaged artifacts
         uses: actions/upload-artifact@v4
         with:
-            name: ultra-viewer-mac-x64
-            path: |
-              ultra-viewer.dmg
+          name: ultra-viewer-mac-x64
+          path: |
+            ultra-viewer.dmg

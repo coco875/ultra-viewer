@@ -2,9 +2,9 @@ name: Linux Compile
 
 on:
   push:
-    branches: [ "*" ]
+    branches: ["*"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   build:
@@ -14,7 +14,11 @@ jobs:
         with:
           submodules: recursive
       - name: Install dependencies
-        run: sudo apt-get install gcc g++ git cmake ninja-build lsb-release libsdl2-dev libpng-dev libsdl2-net-dev libzip-dev zipcmp zipmerge ziptool nlohmann-json3-dev libtinyxml2-dev libspdlog-dev libboost-dev libopengl-dev
+        run: |
+          sudo wget -O /etc/apt/trusted.gpg.d/lunarg-signing-key-pub.asc http://packages.lunarg.com/lunarg-signing-key-pub.asc
+          sudo wget -O /etc/apt/sources.list.d/lunarg-vulkan-noble.list http://packages.lunarg.com/vulkan/lunarg-vulkan-noble.list
+          sudo apt update
+          sudo apt-get install gcc g++ git cmake ninja-build lsb-release libsdl2-dev libpng-dev libsdl2-net-dev libzip-dev zipcmp zipmerge ziptool nlohmann-json3-dev libtinyxml2-dev libspdlog-dev libboost-dev libopengl-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev vulkan-sdk vulkan-tools
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.14
         with:
