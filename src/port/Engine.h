@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <Fast3D/gfx_pc.h>
+#include <Fast3D/interpreter.h>
 #include "libultraship/src/Context.h"
 
 class GameEngine {

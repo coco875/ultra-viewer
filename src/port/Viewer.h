@@ -1,5 +1,5 @@
 #pragma once
-#include "Fast3D/gfx_pc.h"
+#include "Fast3D/interpreter.h"
 
 #define gSPDisplayListOTRFilePath(pkt, dl) gDma1p(pkt, G_DL_OTR_FILEPATH, dl, 0, G_DL_PUSH)
 
