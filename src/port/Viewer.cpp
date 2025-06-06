@@ -19,7 +19,7 @@ Vec3f rotation = {};
 Vec3f scale = { 1.0f, 1.0f, 1.0f };
 Vec3f position = { 0.0f, 0.0f, -500.0f };
 Color ambient = { 1.0f, 1.0f, 1.0f };
-Color color   = { 1.0f, 1.0f, 1.0f };
+Color color = { 1.0f, 1.0f, 1.0f };
 Color background = { 0.0f, 0.0f, 0.0f };
 static Lights1 light;
 
@@ -29,8 +29,8 @@ OSContPad ControllerData[MAXCONTROLLERS];
 OSContStatus ControllerStatus[MAXCONTROLLERS];
 
 static Vp vp = {
-    SCREEN_WIDTH*2, SCREEN_HEIGHT*2, G_MAXZ/2, 0,	/* scale */
-    SCREEN_WIDTH*2, SCREEN_HEIGHT*2, G_MAXZ/2, 0,	/* translate */
+    SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2, G_MAXZ / 2, 0, /* scale */
+    SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2, G_MAXZ / 2, 0, /* translate */
 };
 
 /*
@@ -40,7 +40,7 @@ static Gfx setup_rdpstate[] = {
     gsDPPipeSync(),
     gsDPSetRenderMode(G_RM_OPA_SURF, G_RM_OPA_SURF2),
     gsDPSetColorDither(G_CD_BAYER),
-    gsDPSetScissor(G_SC_NON_INTERLACE, 0,0, SCREEN_WIDTH, SCREEN_HEIGHT),
+    gsDPSetScissor(G_SC_NON_INTERLACE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
     gsDPSetCombineMode(G_CC_MODULATERGB, G_CC_PASS2),
     gsSPEndDisplayList(),
 };
@@ -61,19 +61,19 @@ void ViewerApp::Load() {
     const auto mgr = Ship::Context::GetInstance()->GetResourceManager();
     const auto files = mgr->GetArchiveManager()->ListFiles("*");
 
-    for(auto& file : *files){
-        if(file == "version"){
+    for (auto& file : *files) {
+        if (file == "version") {
             continue;
         }
         auto resource = mgr->LoadResourceProcess("__OTR__" + file);
-        if(resource == nullptr) {
+        if (resource == nullptr) {
             continue;
         }
         auto metadata = resource->GetInitData();
-        if(metadata == nullptr){
+        if (metadata == nullptr) {
             continue;
         }
-        if(metadata->Type == static_cast<uint32_t>(Fast::ResourceType::DisplayList)){            
+        if (metadata->Type == static_cast<uint32_t>(Fast::ResourceType::DisplayList)) {
             auto res = std::static_pointer_cast<Fast::DisplayList>(resource);
             this->LoadedFiles.push_back({ file });
             this->UCodeEntries[file] = res->UCode;
@@ -100,12 +100,12 @@ void ViewerApp::Setup() {
     gDPSetDepthImage(gDLMaster++, zbuffer);
     gDPSetCycleType(gDLMaster++, G_CYC_FILL);
     gDPSetColorImage(gDLMaster++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, zbuffer);
-    gDPSetFillColor(gDLMaster++, (GPACK_ZDZ(G_MAXFBZ,0) << 16 | GPACK_ZDZ(G_MAXFBZ,0)));
-    gDPFillRectangle(gDLMaster++, 0, 0, SCREEN_WIDTH-1, SCREEN_HEIGHT-1);
+    gDPSetFillColor(gDLMaster++, (GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0)));
+    gDPFillRectangle(gDLMaster++, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 
     gDPSetColorImage(gDLMaster++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, framebuffer);
     gDPSetFillColor(gDLMaster++, (clear << 16 | clear));
-    gDPFillRectangle(gDLMaster++, 0, 0, SCREEN_WIDTH-1, SCREEN_HEIGHT-1);
+    gDPFillRectangle(gDLMaster++, 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
 }
 
 void ViewerApp::ReadInput() {
@@ -120,47 +120,47 @@ void ViewerApp::ReadInput() {
     position.x += state.stick_x / 4;
     position.y += state.stick_y / 4;
 
-    if(state.button & L_TRIG) {
+    if (state.button & L_TRIG) {
         position.z -= moveSpeed;
     }
 
-    if(state.button & R_TRIG) {
+    if (state.button & R_TRIG) {
         position.z += moveSpeed;
     }
 
-    if(state.button & U_CBUTTONS) {
+    if (state.button & U_CBUTTONS) {
         rotation.x -= rotateSpeed;
     }
 
-    if(state.button & D_CBUTTONS) {
+    if (state.button & D_CBUTTONS) {
         rotation.x += rotateSpeed;
     }
 
-    if(state.button & L_CBUTTONS) {
+    if (state.button & L_CBUTTONS) {
         rotation.y -= rotateSpeed;
     }
 
-    if(state.button & R_CBUTTONS) {
+    if (state.button & R_CBUTTONS) {
         rotation.y += rotateSpeed;
     }
 
-    if(state.button & A_BUTTON) {
+    if (state.button & A_BUTTON) {
         rotation.z += rotateSpeed;
     }
 
-    if(state.button & B_BUTTON) {
+    if (state.button & B_BUTTON) {
         rotation.z -= rotateSpeed;
     }
 
-    if(ImGui::IsAnyItemHovered() || ImGui::IsAnyItemFocused()){
+    if (ImGui::IsAnyItemHovered() || ImGui::IsAnyItemFocused()) {
         return;
     }
 
-    if(ImGui::IsMouseDragging(ImGuiMouseButton_Left)){
+    if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
         float deltaX = mouse.x - prev.x;
         float deltaY = mouse.y - prev.y;
 
-        if(ImGui::IsKeyDown(ImGuiKey_LeftShift)){
+        if (ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
             position.x += deltaX / 2;
             position.y -= deltaY / 2;
         } else {
@@ -168,8 +168,8 @@ void ViewerApp::ReadInput() {
             rotation.y -= deltaX * 0.008f;
         }
     }
-    
-    if(wheel) {
+
+    if (wheel) {
         position.z -= io.MouseWheel * 10.0;
     }
 
@@ -195,12 +195,9 @@ void ViewerApp::Update() {
     gDPSetRenderMode(gDLMaster++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
     gSPSetGeometryMode(gDLMaster++, G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_FOG | G_LIGHTING | G_CULL_BACK);
 
-    if(UseLight){
-        light = gdSPDefLights1(
-            (u8) (ambient.r * 255), (u8) (ambient.g * 255), (u8) (ambient.b * 255),
-            (u8) (color.r * 255), (u8) (color.g * 255), (u8) (color.b * 255),
-            1,   1,   -1
-        );
+    if (UseLight) {
+        light = gdSPDefLights1((u8) (ambient.r * 255), (u8) (ambient.g * 255), (u8) (ambient.b * 255),
+                               (u8) (color.r * 255), (u8) (color.g * 255), (u8) (color.b * 255), 1, 1, -1);
         gSPSetLights1(gDLMaster++, light);
     }
 
@@ -237,16 +234,16 @@ void ViewerApp::RunFrame() {
     GameEngine::RunCommands(&gGfxPool[0]);
 }
 
-static ImGuiTableFlags flags =
-    ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
-    | ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV | ImGuiTableFlags_NoBordersInBody
-    | ImGuiTableFlags_ScrollY;
+static ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable |
+                               ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti | ImGuiTableFlags_RowBg |
+                               ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV |
+                               ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_ScrollY;
 
 bool DrawFloatSlider(const char* text, float* value, float min, float max, float def = 0.0f) {
     bool slider = ImGui::SliderFloat(text, value, min, max);
     ImGui::SameLine();
     ImGui::PushID(text);
-    if(ImGui::Button("Reset")){
+    if (ImGui::Button("Reset")) {
         *value = def;
         slider = true;
     }
@@ -260,12 +257,13 @@ void ViewerApp::DrawUI() {
 
     {
         ImGui::Begin("Display Lists");
-        if (ImGui::BeginTable("files", 3, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 20))){
+        if (ImGui::BeginTable("files", 3, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 20))) {
             ImGuiListClipper clipper;
             clipper.Begin(this->LoadedFiles.size());
 
             ImGui::TableSetupColumn("Draw", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthFixed, 50.0f);
-            ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed, 340.0f);
+            ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed,
+                                    340.0f);
             ImGui::TableSetupColumn("UCode", ImGuiTableColumnFlags_WidthFixed, 60.0f);
             ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
             ImGui::TableHeadersRow();
@@ -278,9 +276,9 @@ void ViewerApp::DrawUI() {
                     ImGui::PushID(i);
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
-                    if(ImGui::Checkbox(("##" + path).c_str(), &selected)){
+                    if (ImGui::Checkbox(("##" + path).c_str(), &selected)) {
                         selected = cursor != this->OrderDisplay.end();
-                        if(selected) {
+                        if (selected) {
                             this->OrderDisplay.erase(cursor);
                         } else {
                             this->OrderDisplay.push_back(path);
@@ -311,12 +309,12 @@ void ViewerApp::DrawUI() {
             ImGui::EndTable();
         }
 
-        if (ImGui::BeginTable("order", 3, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 10))){
+        if (ImGui::BeginTable("order", 3, flags, ImVec2(0.0f, TEXT_BASE_HEIGHT * 10))) {
             ImGuiListClipper clipper;
             clipper.Begin(this->OrderDisplay.size());
 
             ImGui::TableSetupColumn("Order", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthFixed, 50.0f);
-            ImGui::TableSetupColumn("Path",  ImGuiTableColumnFlags_WidthFixed, 300.0f);
+            ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_WidthFixed, 300.0f);
             ImGui::TableSetupColumn("Action", ImGuiTableColumnFlags_WidthFixed, 100.0f);
             ImGui::TableSetupScrollFreeze(0, 1); // Make row always visible
             ImGui::TableHeadersRow();
@@ -332,9 +330,9 @@ void ViewerApp::DrawUI() {
                     ImGui::TableNextColumn();
                     ImGui::Text("%s", path.c_str());
                     ImGui::TableNextColumn();
-                    if(size > 1) {
+                    if (size > 1) {
                         ImGui::BeginDisabled((i - 1) < 0);
-                        if(ImGui::SmallButton("-")){
+                        if (ImGui::SmallButton("-")) {
                             auto old = this->OrderDisplay[i - 1];
                             auto nnew = this->OrderDisplay[i];
 
@@ -344,7 +342,7 @@ void ViewerApp::DrawUI() {
                         ImGui::EndDisabled();
                         ImGui::SameLine();
                         ImGui::BeginDisabled((i + 1) >= size);
-                        if(ImGui::SmallButton("+")){
+                        if (ImGui::SmallButton("+")) {
                             auto old = this->OrderDisplay[i + 1];
                             auto nnew = this->OrderDisplay[i];
 
@@ -360,7 +358,6 @@ void ViewerApp::DrawUI() {
         }
         ImGui::End();
     }
-
 
     {
         ImGui::Begin("Coords");
@@ -402,12 +399,13 @@ void ViewerApp::DrawUI() {
 }
 
 #ifdef _WIN32
-int SDL_main(int argc, char **argv) {
+int SDL_main(int argc, char** argv) {
 #else
 #if defined(__cplusplus) && defined(PLATFORM_IOS)
 extern "C"
 #endif
-int main(int argc, char *argv[]) {
+    int
+    main(int argc, char* argv[]) {
 #endif
     GameEngine::Create();
     ViewerApp::Instance->Load();

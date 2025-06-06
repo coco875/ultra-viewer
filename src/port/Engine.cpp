@@ -72,6 +72,9 @@ void GameEngine::Create() {
 }
 
 void GameEngine::Destroy() {
+    GameUI::Destroy();
+    delete GameEngine::Instance;
+    GameEngine::Instance = nullptr;
 }
 
 bool ShouldClearTextureCacheAtEndOfFrame = false;
